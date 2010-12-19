@@ -20,13 +20,6 @@
 
 package de.feanor.yeoldemensa;
 
-import static de.feanor.yeoldemensa.MensaMenu.AUSGABE_A;
-import static de.feanor.yeoldemensa.MensaMenu.AUSGABE_B;
-import static de.feanor.yeoldemensa.MensaMenu.BEILAGEN;
-import static de.feanor.yeoldemensa.MensaMenu.CULINARIUM;
-import static de.feanor.yeoldemensa.MensaMenu.MENSA_UHLHORNSWEG;
-import static de.feanor.yeoldemensa.MensaMenu.MENSA_WECHLOY;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +38,9 @@ import android.widget.TextView;
 
 import com.commonsware.cwac.merge.MergeAdapter;
 
+import de.feanor.yeoldemensa.mensen.MensaOldbUhlhornsweg;
+import de.feanor.yeoldemensa.mensen.MensaOldbWechloy;
+
 /**
  * @author Daniel Süpke
  * 
@@ -53,19 +49,21 @@ public class YeOldeMensa extends Activity {
 
 	public static final String VERSION = "0.7";
 
+	// ADD YOUR MENSA HERE, THE REST IS DONE THROUGH MAGIC
+	private Mensa[] mensa = { new MensaOldbUhlhornsweg(),
+			new MensaOldbWechloy() };
+
 	// currently selected mensa
-	private int mensa = MENSA_UHLHORNSWEG;
-	private MensaMenu mensaMenu = new MensaMenu();
+	private int selectedMensa = 0;
 
 	private MergeAdapter adapter;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		Log.d("YOM", "Starting application");
 
 		refresh();
-		// getFakeMenu(); // Use this for testing
+		//useFakeMensa(); // Use this for testing
 
 		setContentView(R.layout.main);
 		refreshView();
@@ -75,42 +73,47 @@ public class YeOldeMensa extends Activity {
 	 * Provides test data without accessing the internet.
 	 */
 	@SuppressWarnings("unused")
-	private void getFakeMenu() {
-		mensaMenu.add_menu_item(MENSA_UHLHORNSWEG, AUSGABE_A,
-				"Alternativessen Blubb (1,40)");
-		mensaMenu.add_menu_item(MENSA_UHLHORNSWEG, AUSGABE_A,
-				"Pasta mit Klatsch Soße (2,00)");
-		mensaMenu.add_menu_item(MENSA_UHLHORNSWEG, AUSGABE_A, "Paste (2,00)");
-		mensaMenu.add_menu_item(MENSA_UHLHORNSWEG, AUSGABE_B,
-				"Reste von letzter Woche");
-		mensaMenu.add_menu_item(MENSA_UHLHORNSWEG, AUSGABE_B, "Ratte am Spieß");
-		mensaMenu.add_menu_item(MENSA_UHLHORNSWEG, BEILAGEN, "Schälchen Pampe");
-		mensaMenu.add_menu_item(MENSA_UHLHORNSWEG, BEILAGEN, "Schälchen Pampe");
-		mensaMenu.add_menu_item(MENSA_UHLHORNSWEG, BEILAGEN, "Schälchen Pampe");
-		mensaMenu.add_menu_item(MENSA_UHLHORNSWEG, BEILAGEN, "Schälchen Pampe");
-		mensaMenu.add_menu_item(MENSA_UHLHORNSWEG, BEILAGEN, "Schälchen Pampe");
-		mensaMenu.add_menu_item(MENSA_UHLHORNSWEG, BEILAGEN, "Schälchen Pampe");
-		mensaMenu.add_menu_item(MENSA_UHLHORNSWEG, BEILAGEN, "Schälchen Pampe");
-		mensaMenu.add_menu_item(MENSA_UHLHORNSWEG, BEILAGEN, "Schälchen Pampe");
-		mensaMenu.add_menu_item(MENSA_UHLHORNSWEG, BEILAGEN, "Schälchen Pampe");
-		mensaMenu.add_menu_item(MENSA_UHLHORNSWEG, CULINARIUM,
-				"Lecker teures Essen");
-		mensaMenu.add_menu_item(MENSA_UHLHORNSWEG, CULINARIUM,
-				"Teures Schälchen Pampe");
-		mensaMenu.add_menu_item(MENSA_UHLHORNSWEG, CULINARIUM,
-				"Teures Schälchen Pampe");
-		mensaMenu.add_menu_item(MENSA_WECHLOY, AUSGABE_A,
-				"Alternativessen Blubb (1,40)");
-		mensaMenu.add_menu_item(MENSA_WECHLOY, AUSGABE_A,
-				"Pasta mit Klatsch Soße (2,00)");
-		mensaMenu.add_menu_item(MENSA_WECHLOY, AUSGABE_A, "Paste (2,00)");
-		mensaMenu.add_menu_item(MENSA_WECHLOY, BEILAGEN, "Schälchen Pampe");
-		mensaMenu.add_menu_item(MENSA_WECHLOY, BEILAGEN, "Schälchen Pampe");
-		mensaMenu.add_menu_item(MENSA_WECHLOY, BEILAGEN, "Schälchen Pampe");
-		mensaMenu.add_menu_item(MENSA_WECHLOY, BEILAGEN, "Schälchen Pampe");
-		mensaMenu.add_menu_item(MENSA_WECHLOY, BEILAGEN, "Schälchen Pampe");
-		mensaMenu.add_menu_item(MENSA_WECHLOY, BEILAGEN, "Schälchen Pampe");
-		mensaMenu.add_menu_item(MENSA_WECHLOY, BEILAGEN, "Schälchen Pampe");
+	private void useFakeMensa() {
+
+		selectedMensa = 0;
+		mensa = new Mensa[1];
+		mensa[0] = new Mensa() {
+
+			@Override
+			protected void loadMenu() throws IOException {
+				addMenuItem("Alternativ/Pasta", "Alternativessen Blubb (1,40)");
+				addMenuItem("Alternativ/Pasta", "Pasta mit Klatsch Soße (2,00)");
+				addMenuItem("Alternativ/Pasta", "Paste (2,00)");
+
+				addMenuItem("Auswahl", "Ratte am Spieß");
+				addMenuItem("Auswahl", "Vegane Pampe");
+
+				addMenuItem("Beilagen", "Schälchen Pampe");
+				addMenuItem("Beilagen", "Schälchen Pampe2");
+				addMenuItem("Beilagen", "Schälchen Pampe3");
+				addMenuItem("Beilagen", "Schälchen Pampe4");
+				addMenuItem("Beilagen", "Schälchen Pampe5");
+				addMenuItem("Beilagen", "Schälchen Pampe6");
+				addMenuItem("Beilagen", "Schälchen Pampe7");
+				addMenuItem("Beilagen", "Schälchen Pampe8");
+				addMenuItem("Beilagen", "Schälchen Pampe9");
+
+				addMenuItem("Culinarium", "Lecker teures Essen");
+				addMenuItem("Culinarium", "Teures Schälchen Pampe");
+			}
+
+			@Override
+			protected String getName() {
+				return "Test Mensa";
+			}
+		};
+
+		try {
+			mensa[0].refresh();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -133,14 +136,18 @@ public class YeOldeMensa extends Activity {
 			return true;
 
 		case R.id.settings:
-			final CharSequence[] items = { "Uhlhornsweg", "Wechloy" };
+			String[] mensaNames = new String[mensa.length];
+
+			for (int i = 0; i < mensa.length; i++) {
+				mensaNames[i] = mensa[i].getName();
+			}
 
 			builder = new AlertDialog.Builder(this);
 			builder.setTitle("Einstellungen");
-			builder.setSingleChoiceItems(items, -1,
+			builder.setSingleChoiceItems(mensaNames, -1,
 					new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int item) {
-							mensa = item;
+							selectedMensa = item;
 						}
 					});
 			builder.setCancelable(false);
@@ -157,14 +164,13 @@ public class YeOldeMensa extends Activity {
 			return true;
 
 		case R.id.about:
-			Log.d("yom", "über");
 			builder = new AlertDialog.Builder(this);
-			builder
-					.setMessage(
-							"Ye Olde Mensa v"
-									+ VERSION
-									+ "\n\nCopyright 2010/2011\nby Daniel Süpke\n\nhttp://suepke.eu/")
-					.setCancelable(false).setPositiveButton("Ok",
+			builder.setMessage(
+					"Ye Olde Mensa v"
+							+ VERSION
+							+ "\n\nCopyright 2010/2011\nby Daniel Süpke\n\nhttp://suepke.eu/")
+					.setCancelable(false)
+					.setPositiveButton("Ok",
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,
 										int id) {
@@ -185,14 +191,15 @@ public class YeOldeMensa extends Activity {
 	 */
 	private void refresh() {
 		try {
-			this.mensaMenu.refresh();
+			this.mensa[selectedMensa].refresh();
 		} catch (IOException e) {
-			Log.d("yom", "Exception while retrieving menu data: "
-					+ e.getMessage());
+			Log.d("yom",
+					"Exception while retrieving menu data: " + e.getMessage());
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setMessage(
 					"Fehler beim Auslesen der Mensa-Webseite: "
-							+ e.getMessage()).setCancelable(false)
+							+ e.getMessage())
+					.setCancelable(false)
 					.setPositiveButton("Ok",
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,
@@ -212,63 +219,26 @@ public class YeOldeMensa extends Activity {
 		// TODO: Clean up this mess. Very slow and unintuitive use of the
 		// mergeadapter contents due to a bug I was fighting with.
 		ArrayAdapter<String> a;
-		List<String> l;
 
 		adapter = new MergeAdapter();
 
-		if (mensa == MENSA_UHLHORNSWEG) {
-			((TextView) findViewById(R.id.headermensa))
-					.setText("Mensa Uhlhornsweg");
+		((TextView) findViewById(R.id.headermensa))
+				.setText(mensa[selectedMensa].getName());
 
-			l = new ArrayList<String>();
-			l.add("Ausgabe A (Alternativ+Pasta)");
-			a = new ArrayAdapter<String>(this, R.layout.list_header, l);
+		for (String menuType : mensa[selectedMensa].getMenu().keySet()) {
+			List<String> list = new ArrayList<String>();
+			list.add(menuType);
+			a = new ArrayAdapter<String>(this, R.layout.list_header, list);
 			adapter.addAdapter(a);
-			a = new ArrayAdapter<String>(this, R.layout.list_item, mensaMenu
-					.getMenuItems(MENSA_UHLHORNSWEG, AUSGABE_A));
-			adapter.addAdapter(a);
-
-			l = new ArrayList<String>();
-			l.add("Ausgabe B (Auswahl)");
-			a = new ArrayAdapter<String>(this, R.layout.list_header, l);
-			adapter.addAdapter(a);
-			a = new ArrayAdapter<String>(this, R.layout.list_item, mensaMenu
-					.getMenuItems(MENSA_UHLHORNSWEG, AUSGABE_B));
-			adapter.addAdapter(a);
-		} else if (mensa == MENSA_WECHLOY) {
-			((TextView) findViewById(R.id.headermensa))
-					.setText("Mensa Wechloy");
-
-			l = new ArrayList<String>();
-			l.add("Tellergerichte");
-			a = new ArrayAdapter<String>(this, R.layout.list_header, l);
-			adapter.addAdapter(a);
-			a = new ArrayAdapter<String>(this, R.layout.list_item, mensaMenu
-					.getMenuItems(MENSA_WECHLOY, AUSGABE_A));
-			adapter.addAdapter(a);
-		}
-
-		l = new ArrayList<String>();
-		l.add("Beilagen (0,30/0,50)");
-		a = new ArrayAdapter<String>(this, R.layout.list_header, l);
-		adapter.addAdapter(a);
-		a = new ArrayAdapter<String>(this, R.layout.list_item, mensaMenu
-				.getMenuItems(mensa, BEILAGEN));
-		adapter.addAdapter(a);
-
-		if (mensa == MENSA_UHLHORNSWEG) {
-			l = new ArrayList<String>();
-			l.add("Culinarium");
-			a = new ArrayAdapter<String>(this, R.layout.list_header, l);
-			adapter.addAdapter(a);
-			a = new ArrayAdapter<String>(this, R.layout.list_item, mensaMenu
-					.getMenuItems(MENSA_UHLHORNSWEG, CULINARIUM));
+			a = new ArrayAdapter<String>(this, R.layout.list_item,
+					mensa[selectedMensa].getMenuItems(menuType));
 			adapter.addAdapter(a);
 		}
 
 		adapter.notifyDataSetChanged();
 		((ListView) findViewById(R.id.menu_list)).setAdapter(adapter);
-		((TextView) findViewById(R.id.headerdate)).setText(mensaMenu.getDate());
+		((TextView) findViewById(R.id.headerdate)).setText(mensa[selectedMensa]
+				.getDate());
 
 		// Keep this for now, I think I can use it to improve the list creation
 		// with mergeadapter
