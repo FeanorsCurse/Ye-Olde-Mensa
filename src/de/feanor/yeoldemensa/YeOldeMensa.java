@@ -50,8 +50,7 @@ public class YeOldeMensa extends Activity {
 	public static final String VERSION = "0.7";
 
 	// ADD YOUR MENSA HERE, THE REST IS DONE THROUGH MAGIC
-	private Mensa[] mensa = { new MensaOldbUhlhornsweg(),
-			new MensaOldbWechloy() };
+	private Mensa[] mensa = { new MensaOldbUhlhornsweg(), new MensaOldbWechloy(), new MensaMagdbCampus(), new MensaMagdbHerren(), new MensaWerninger(), new MensaStendal()};
 
 	// currently selected mensa
 	private int selectedMensa = 0;
