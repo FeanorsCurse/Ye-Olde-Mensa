@@ -38,8 +38,7 @@ import android.widget.TextView;
 
 import com.commonsware.cwac.merge.MergeAdapter;
 
-import de.feanor.yeoldemensa.mensen.MensaOldbUhlhornsweg;
-import de.feanor.yeoldemensa.mensen.MensaOldbWechloy;
+import de.feanor.yeoldemensa.mensen.*;
 
 /**
  * @author Daniel Süpke
