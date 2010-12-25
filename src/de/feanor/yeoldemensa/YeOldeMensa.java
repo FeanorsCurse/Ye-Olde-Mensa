@@ -46,7 +46,7 @@ import de.feanor.yeoldemensa.mensen.*;
  */
 public class YeOldeMensa extends Activity {
 
-	public static final String VERSION = "0.7";
+	public static final String VERSION = "0.8";
 
 	// ADD YOUR MENSA HERE, THE REST IS DONE THROUGH MAGIC
 	private Mensa[] mensa = { new MensaOldbUhlhornsweg(),
