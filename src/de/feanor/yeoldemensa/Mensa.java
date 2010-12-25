@@ -72,6 +72,10 @@ public abstract class Mensa {
 		menu.clear();
 		loadMenu();
 	}
+	
+	public boolean isEmpty() {
+		return menu.isEmpty();
+	}
 
 	/**
 	 * @return the date

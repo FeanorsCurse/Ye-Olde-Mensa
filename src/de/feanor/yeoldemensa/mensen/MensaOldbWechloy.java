@@ -56,6 +56,9 @@ public class MensaOldbWechloy extends Mensa {
 		while ((element = tokenizer.nextText()) != null
 				&& !element.startsWith("Mensa Wechloy"))
 			;
+		
+		// Skip date
+		tokenizer.nextText();
 
 		while ((element = tokenizer.nextText()) != null
 				&& !element.startsWith("Mensa Ofener")) {

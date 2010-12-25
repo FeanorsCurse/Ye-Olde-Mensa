@@ -49,7 +49,9 @@ public class YeOldeMensa extends Activity {
 	public static final String VERSION = "0.7";
 
 	// ADD YOUR MENSA HERE, THE REST IS DONE THROUGH MAGIC
-	private Mensa[] mensa = { new MensaOldbUhlhornsweg(), new MensaOldbWechloy(), new MensaMagdbCampus(), new MensaMagdbHerren(), new MensaWerninger(), new MensaStendal()};
+	private Mensa[] mensa = { new MensaOldbUhlhornsweg(),
+			new MensaOldbWechloy(), new MensaMagdbCampus(),
+			new MensaMagdbHerren(), new MensaWerninger(), new MensaStendal() };
 
 	// currently selected mensa
 	private int selectedMensa = 0;
@@ -61,7 +63,7 @@ public class YeOldeMensa extends Activity {
 		super.onCreate(savedInstanceState);
 
 		refresh();
-		//useFakeMensa(); // Use this for testing
+		// useFakeMensa(); // Use this for testing
 
 		setContentView(R.layout.main);
 		refreshView();
@@ -152,6 +154,7 @@ public class YeOldeMensa extends Activity {
 			builder.setPositiveButton("Ok",
 					new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int id) {
+							refresh();
 							refreshView();
 							dialog.dismiss();
 						}
@@ -166,7 +169,7 @@ public class YeOldeMensa extends Activity {
 			builder.setMessage(
 					"Ye Olde Mensa v"
 							+ VERSION
-							+ "\n\nCopyright 2010/2011\nby Daniel Süpke\n\nhttp://suepke.eu/")
+							+ "\n\nCopyright 2010/2011\nby Daniel Süpke, Frederik Kramer\n\nhttp://suepke.eu/")
 					.setCancelable(false)
 					.setPositiveButton("Ok",
 							new DialogInterface.OnClickListener() {
@@ -185,7 +188,8 @@ public class YeOldeMensa extends Activity {
 
 	/**
 	 * Refreshes the menu data (i.e. parses the web site) and displays any error
-	 * messages.
+	 * messages. TODO: Include in refreshView()? Otherwise always both calls
+	 * necessary. Maybe integrate FakeMenu into it and use a DEBUG constant
 	 */
 	private void refresh() {
 		try {
@@ -222,6 +226,15 @@ public class YeOldeMensa extends Activity {
 
 		((TextView) findViewById(R.id.headermensa))
 				.setText(mensa[selectedMensa].getName());
+		
+		if (mensa[selectedMensa].isEmpty()) {
+			List<String> list = new ArrayList<String>();
+			
+			list.add("Kein Menü gefunden. Mensa geschlossen?");
+			a = new ArrayAdapter<String>(this, R.layout.list_header,
+					list);
+			adapter.addAdapter(a);
+		}
 
 		for (String menuType : mensa[selectedMensa].getMenu().keySet()) {
 			List<String> list = new ArrayList<String>();
