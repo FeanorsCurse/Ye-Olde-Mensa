@@ -84,6 +84,12 @@ public abstract class Mensa {
 		// TODO Support more than a single day
 		return new SimpleDateFormat("dd.MM.yyyy").format(new Date());
 	}
+	
+	/***
+	 * @return coordinates of the Mensa
+	 */
+	
+	public abstract double[] getCoordinates() throws Exception;
 
 	/**
 	 * Load the menu, usually by parsing a web site. Use addMenuItem(String

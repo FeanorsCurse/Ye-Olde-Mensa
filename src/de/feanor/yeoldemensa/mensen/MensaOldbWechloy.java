@@ -1,5 +1,5 @@
 /**
- *   Ye Olde Mensa is an android application for displaying the current
+  *   Ye Olde Mensa is an android application for displaying the current
  *   mensa plans of University Oldenburg on an android mobile phone.
  *   
  *   Copyright (C) 2009/2010 Daniel Süpke
@@ -33,7 +33,9 @@ import de.feanor.yeoldemensa.Mensa;
 public class MensaOldbWechloy extends Mensa {
 
 	public static final int HAUPTGERICHTE = 0, BEILAGEN = 1;
-
+	public static double lat = 52.141074;
+	public static double lng = 11.64834;
+    
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -100,6 +102,14 @@ public class MensaOldbWechloy extends Mensa {
 	@Override
 	protected String getName() {
 		return "Mensa Wechloy";
+	}
+	
+	@Override
+	public double[] getCoordinates() {
+	double[] coordinates = new double[2];
+	coordinates[0] = lat;
+	coordinates[1] = lng;
+    return coordinates;
 	}
 
 }

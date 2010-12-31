@@ -26,8 +26,10 @@ import java.util.List;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -38,6 +40,7 @@ import android.widget.TextView;
 
 import com.commonsware.cwac.merge.MergeAdapter;
 
+import de.compserve.gsmhelper.SimpleGSMHelper;
 import de.feanor.yeoldemensa.mensen.*;
 
 /**
@@ -47,7 +50,10 @@ import de.feanor.yeoldemensa.mensen.*;
 public class YeOldeMensa extends Activity {
 
 	public static final String VERSION = "0.8";
-
+	public static double lat = 52.141074;
+    public static double lng = 11.64834;
+    public SimpleGSMHelper gsm = new SimpleGSMHelper();
+	
 	// ADD YOUR MENSA HERE, THE REST IS DONE THROUGH MAGIC
 	private Mensa[] mensa = { new MensaOldbUhlhornsweg(),
 			new MensaOldbWechloy(), new MensaMagdbCampus(),
@@ -61,12 +67,15 @@ public class YeOldeMensa extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
+		//setCurrentCoordinates();
+		TelephonyManager tm  =  (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE); 
+		gsm.setMobileLocation(tm);
 		refresh();
 		// useFakeMensa(); // Use this for testing
 
 		setContentView(R.layout.main);
 		refreshView();
+		
 	}
 
 	/**
@@ -105,6 +114,14 @@ public class YeOldeMensa extends Activity {
 			@Override
 			protected String getName() {
 				return "Test Mensa";
+			}
+			
+			@Override
+			public double[] getCoordinates() {
+			double[] coordinates = new double[2];
+			coordinates[0] = lat;
+			coordinates[1] = lng;
+		    return coordinates;
 			}
 		};
 
@@ -166,10 +183,15 @@ public class YeOldeMensa extends Activity {
 
 		case R.id.about:
 			builder = new AlertDialog.Builder(this);
+			try {
+			
+			String distance = String.valueOf(gsm.getDistance(this.mensa[this.selectedMensa].getCoordinates()));
+			
 			builder.setMessage(
 					"Ye Olde Mensa v"
 							+ VERSION
-							+ "\n\nCopyright 2010/2011\nby Daniel Süpke, Frederik Kramer\n\nhttp://suepke.eu/")
+							+ "\n\nCopyright 2010/2011\nby Daniel Süpke, Frederik Kramer\n\nhttp://suepke.eu/ "
+							+ "\n Die Entfernung\n zur ausgewählten Mensa\n beträgt zur Zeit: "+ distance + "km")
 					.setCancelable(false)
 					.setPositiveButton("Ok",
 							new DialogInterface.OnClickListener() {
@@ -179,6 +201,7 @@ public class YeOldeMensa extends Activity {
 								}
 							});
 			builder.create();
+			} catch (Exception e) {Log.i("Location", e.toString());}
 			builder.show();
 			return true;
 		default:
@@ -259,4 +282,5 @@ public class YeOldeMensa extends Activity {
 		 * findViewById(R.id.headermensa)) .setText("Mensa Wechloy");
 		 */
 	}
+	
 }

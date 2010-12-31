@@ -33,7 +33,8 @@ import de.feanor.yeoldemensa.Mensa;
 public class MensaWerninger extends Mensa {
 
 	public static final int HAUPTGERICHTE = 0, BEILAGEN = 1;
-
+	public static double lat = 52.141074;
+	public static double lng = 11.64834;
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -59,7 +60,7 @@ public class MensaWerninger extends Mensa {
 				}
 				this.addMenuItem(getMenuType(menuType), output);
 			}
-			if (element.startsWith("Beilagen:")){
+			if (element.startsWith("Beilagen:") && element.length() > 9){
 				element = element.replaceAll("Beilagen: ", "");
 				String[] elements = element.split(", ");
 				menuType = BEILAGEN;
@@ -84,6 +85,14 @@ public class MensaWerninger extends Mensa {
 	@Override
 	protected String getName() {
 		return "Mensa Werningerode";
+	}
+	
+	@Override
+	public double[] getCoordinates() {
+	double[] coordinates = new double[2];
+	coordinates[0] = lat;
+	coordinates[1] = lng;
+    return coordinates;
 	}
 
 }

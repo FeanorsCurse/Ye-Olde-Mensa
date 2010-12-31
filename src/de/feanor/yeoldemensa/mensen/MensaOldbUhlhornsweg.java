@@ -34,7 +34,9 @@ public class MensaOldbUhlhornsweg extends Mensa {
 
 	public static final int AUSGABE_A = 0, AUSGABE_B = 1, CULINARIUM = 2,
 			BEILAGEN = 3;
-
+	public static double lat = 52.141074;
+	public static double lng = 11.64834;
+    
 	@Override
 	protected void loadMenu() throws IOException {
 		SimpleHTMLTokenizer tokenizer = new SimpleHTMLTokenizer(
@@ -112,5 +114,13 @@ public class MensaOldbUhlhornsweg extends Mensa {
 	@Override
 	protected String getName() {
 		return "Mensa Uhlhornsweg";
+	}
+	
+	@Override
+	public double[] getCoordinates() {
+	double[] coordinates = new double[2];
+	coordinates[0] = lat;
+	coordinates[1] = lng;
+    return coordinates;
 	}
 }
