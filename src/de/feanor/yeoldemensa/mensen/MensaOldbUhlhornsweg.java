@@ -34,9 +34,9 @@ public class MensaOldbUhlhornsweg extends Mensa {
 
 	public static final int AUSGABE_A = 0, AUSGABE_B = 1, CULINARIUM = 2,
 			BEILAGEN = 3;
-	public static double lat = 52.141074;
-	public static double lng = 11.64834;
-    
+	public static double lat = 53.147372;
+	public static double lng = 8.179326;
+	    
 	@Override
 	protected void loadMenu() throws IOException {
 		SimpleHTMLTokenizer tokenizer = new SimpleHTMLTokenizer(
