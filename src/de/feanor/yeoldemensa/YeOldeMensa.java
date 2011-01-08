@@ -30,11 +30,14 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TabHost;
+import android.widget.TabHost.TabContentFactory;
+import android.widget.TabHost.TabSpec;
 import android.widget.TextView;
 import de.compserve.gsmhelper.SimpleGSMHelper;
 import de.feanor.yeoldemensa.Mensa.Day;
@@ -73,7 +76,7 @@ public class YeOldeMensa extends Activity {
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.main);
-		
+
 		// Load current Mensa
 		refresh();
 
@@ -89,48 +92,35 @@ public class YeOldeMensa extends Activity {
 			menuDayView[i] = new MenuDayView(this, Day.values()[i]);
 		}
 
-		host.addTab(host.newTabSpec("Mo").setIndicator("Montag")
-				.setContent(new TabHost.TabContentFactory() {
-
-					public View createTabContent(String tag) {
-						return menuDayView[0];
-					}
-				}));
-		host.addTab(host.newTabSpec("Di").setIndicator("Dienstag")
-				.setContent(new TabHost.TabContentFactory() {
-
-					public View createTabContent(String tag) {
-						return menuDayView[1];
-					}
-				}));
-		host.addTab(host.newTabSpec("Mi").setIndicator("Mittwoch")
-				.setContent(new TabHost.TabContentFactory() {
-
-					public View createTabContent(String tag) {
-						return menuDayView[2];
-					}
-				}));
-		host.addTab(host.newTabSpec("Do").setIndicator("Donnerstag")
-				.setContent(new TabHost.TabContentFactory() {
-
-					public View createTabContent(String tag) {
-						return menuDayView[3];
-					}
-				}));
-		host.addTab(host.newTabSpec("Fr").setIndicator("Freitag")
-				.setContent(new TabHost.TabContentFactory() {
-
-					public View createTabContent(String tag) {
-						return menuDayView[4];
-					}
-				}));
+		host.addTab(createTab(host, "Montag", menuDayView[0]));
+		host.addTab(createTab(host, "Dienstag", menuDayView[1]));
+		host.addTab(createTab(host, "Mittwoch", menuDayView[2]));
+		host.addTab(createTab(host, "Donnerstag", menuDayView[3]));
+		host.addTab(createTab(host, "Freitag", menuDayView[4]));
 
 		// adjust tab size. Unsure how this looks in different resolutions
-		host.getTabWidget().getChildAt(0).getLayoutParams().height = 60;
-		host.getTabWidget().getChildAt(1).getLayoutParams().height = 60;
-		host.getTabWidget().getChildAt(2).getLayoutParams().height = 60;
-		host.getTabWidget().getChildAt(3).getLayoutParams().height = 60;
-		host.getTabWidget().getChildAt(4).getLayoutParams().height = 60;
+		for (int i = 0; i < 5; i++) {
+			// host.getTabWidget().getChildAt(i).getLayoutParams().height = 60;
+			// host.getTabWidget().getChildAt(i).setBackgroundColor(Color.parseColor("#000077"));
+			// //unselected
+		}
+		// host.getTabWidget().getChildAt(host.getCurrentTab()).setBackgroundColor(Color.parseColor("#0000FF"));
+		// // selected
+	}
+
+	private TabSpec createTab(TabHost host, String title,
+			final MenuDayView menuDayView2) {
+		View view = getLayoutInflater().inflate(R.layout.tabs_bg, null);
+		TextView textView = (TextView) view.findViewById(R.id.tabsText);
+		textView.setText(title);
+		
+		return host.newTabSpec(title).setIndicator(view)
+				.setContent(new TabHost.TabContentFactory() {
+
+					public View createTabContent(String tag) {
+						return menuDayView2;
+					}
+				});
 	}
 
 	/**
