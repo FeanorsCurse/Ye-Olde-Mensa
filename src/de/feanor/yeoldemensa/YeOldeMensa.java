@@ -20,9 +20,8 @@
 
 package de.feanor.yeoldemensa;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -34,14 +33,17 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.view.View;
+import android.widget.TabHost;
 import android.widget.TextView;
-
-import com.commonsware.cwac.merge.MergeAdapter;
-
 import de.compserve.gsmhelper.SimpleGSMHelper;
-import de.feanor.yeoldemensa.mensen.*;
+import de.feanor.yeoldemensa.Mensa.Day;
+import de.feanor.yeoldemensa.mensen.MensaMagdbCampus;
+import de.feanor.yeoldemensa.mensen.MensaMagdbHerren;
+import de.feanor.yeoldemensa.mensen.MensaOldbUhlhornsweg;
+import de.feanor.yeoldemensa.mensen.MensaOldbWechloy;
+import de.feanor.yeoldemensa.mensen.MensaStendal;
+import de.feanor.yeoldemensa.mensen.MensaWerninger;
 
 /**
  * @author Daniel Süpke
@@ -49,88 +51,93 @@ import de.feanor.yeoldemensa.mensen.*;
  */
 public class YeOldeMensa extends Activity {
 
-	public static final String VERSION = "0.8";
-	public static double lat = 52.141074;
-    public static double lng = 11.64834;
-    public SimpleGSMHelper gsm = new SimpleGSMHelper();
-	
+	public static final String VERSION = "0.9";
+	public SimpleGSMHelper gsm = new SimpleGSMHelper();
+
 	// ADD YOUR MENSA HERE, THE REST IS DONE THROUGH MAGIC
 	private Mensa[] mensa = { new MensaOldbUhlhornsweg(),
 			new MensaOldbWechloy(), new MensaMagdbCampus(),
 			new MensaMagdbHerren(), new MensaWerninger(), new MensaStendal() };
 
-	// currently selected mensa
+	// Use this for testing
+	// private Mensa[] mensa = { new MensaTest() };
+
+	// currently selected mensa index
 	private int selectedMensa = 0;
 
-	private MergeAdapter adapter;
+	// One for each day of the week
+	private MenuDayView[] menuDayView = new MenuDayView[5];
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		//setCurrentCoordinates();
-		TelephonyManager tm  =  (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE); 
-		gsm.setMobileLocation(tm);
-		refresh();
-		// useFakeMensa(); // Use this for testing
 
 		setContentView(R.layout.main);
-		refreshView();
 		
+		// Load current Mensa
+		refresh();
+
+		// setCurrentCoordinates;
+		TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+		gsm.setMobileLocation(tm);
+
+		// Set up tabs
+		TabHost host = (TabHost) findViewById(R.id.tabhost);
+		host.setup();
+
+		for (int i = 0; i < 5; i++) {
+			menuDayView[i] = new MenuDayView(this, Day.values()[i]);
+		}
+
+		host.addTab(host.newTabSpec("Mo").setIndicator("Montag")
+				.setContent(new TabHost.TabContentFactory() {
+
+					public View createTabContent(String tag) {
+						return menuDayView[0];
+					}
+				}));
+		host.addTab(host.newTabSpec("Di").setIndicator("Dienstag")
+				.setContent(new TabHost.TabContentFactory() {
+
+					public View createTabContent(String tag) {
+						return menuDayView[1];
+					}
+				}));
+		host.addTab(host.newTabSpec("Mi").setIndicator("Mittwoch")
+				.setContent(new TabHost.TabContentFactory() {
+
+					public View createTabContent(String tag) {
+						return menuDayView[2];
+					}
+				}));
+		host.addTab(host.newTabSpec("Do").setIndicator("Donnerstag")
+				.setContent(new TabHost.TabContentFactory() {
+
+					public View createTabContent(String tag) {
+						return menuDayView[3];
+					}
+				}));
+		host.addTab(host.newTabSpec("Fr").setIndicator("Freitag")
+				.setContent(new TabHost.TabContentFactory() {
+
+					public View createTabContent(String tag) {
+						return menuDayView[4];
+					}
+				}));
+
+		// adjust tab size. Unsure how this looks in different resolutions
+		host.getTabWidget().getChildAt(0).getLayoutParams().height = 60;
+		host.getTabWidget().getChildAt(1).getLayoutParams().height = 60;
+		host.getTabWidget().getChildAt(2).getLayoutParams().height = 60;
+		host.getTabWidget().getChildAt(3).getLayoutParams().height = 60;
+		host.getTabWidget().getChildAt(4).getLayoutParams().height = 60;
 	}
 
 	/**
-	 * Provides test data without accessing the internet.
+	 * @return
 	 */
-	@SuppressWarnings("unused")
-	private void useFakeMensa() {
-
-		selectedMensa = 0;
-		mensa = new Mensa[1];
-		mensa[0] = new Mensa() {
-
-			@Override
-			protected void loadMenu() throws IOException {
-				addMenuItem("Alternativ/Pasta", "Alternativessen Blubb (1,40)");
-				addMenuItem("Alternativ/Pasta", "Pasta mit Klatsch Soße (2,00)");
-				addMenuItem("Alternativ/Pasta", "Paste (2,00)");
-
-				addMenuItem("Auswahl", "Ratte am Spieß");
-				addMenuItem("Auswahl", "Vegane Pampe");
-
-				addMenuItem("Beilagen", "Schälchen Pampe");
-				addMenuItem("Beilagen", "Schälchen Pampe2");
-				addMenuItem("Beilagen", "Schälchen Pampe3");
-				addMenuItem("Beilagen", "Schälchen Pampe4");
-				addMenuItem("Beilagen", "Schälchen Pampe5");
-				addMenuItem("Beilagen", "Schälchen Pampe6");
-				addMenuItem("Beilagen", "Schälchen Pampe7");
-				addMenuItem("Beilagen", "Schälchen Pampe8");
-				addMenuItem("Beilagen", "Schälchen Pampe9");
-
-				addMenuItem("Culinarium", "Lecker teures Essen");
-				addMenuItem("Culinarium", "Teures Schälchen Pampe");
-			}
-
-			@Override
-			protected String getName() {
-				return "Test Mensa";
-			}
-			
-			@Override
-			public double[] getCoordinates() {
-			double[] coordinates = new double[2];
-			coordinates[0] = lat;
-			coordinates[1] = lng;
-		    return coordinates;
-			}
-		};
-
-		try {
-			mensa[0].refresh();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	public Mensa getCurrentMensa() {
+		return mensa[selectedMensa];
 	}
 
 	@Override
@@ -149,7 +156,7 @@ public class YeOldeMensa extends Activity {
 		switch (item.getItemId()) {
 		case R.id.refresh:
 			refresh();
-			refreshView();
+			// refreshView();
 			return true;
 
 		case R.id.settings:
@@ -172,7 +179,11 @@ public class YeOldeMensa extends Activity {
 					new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int id) {
 							refresh();
-							refreshView();
+
+							for (int i = 0; i < 5; i++) {
+								menuDayView[i].refreshView();
+							}
+							// refreshView();
 							dialog.dismiss();
 						}
 					});
@@ -184,24 +195,29 @@ public class YeOldeMensa extends Activity {
 		case R.id.about:
 			builder = new AlertDialog.Builder(this);
 			try {
-			
-			String distance = String.valueOf(gsm.getDistance(this.mensa[this.selectedMensa].getCoordinates()));
-			
-			builder.setMessage(
-					"Ye Olde Mensa v"
-							+ VERSION
-							+ "\n\nCopyright 2010/2011\nby Daniel Süpke, Frederik Kramer\n\nhttp://suepke.eu/ "
-							+ "\n Die Entfernung\n zur ausgewählten Mensa\n beträgt zur Zeit: "+ distance + "km")
-					.setCancelable(false)
-					.setPositiveButton("Ok",
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int id) {
-									dialog.dismiss();
-								}
-							});
-			builder.create();
-			} catch (Exception e) {Log.i("Location", e.toString());}
+
+				String distance = String.valueOf(gsm
+						.getDistance(this.mensa[this.selectedMensa]
+								.getCoordinates()));
+
+				builder.setMessage(
+						"Ye Olde Mensa v"
+								+ VERSION
+								+ "\n\nCopyright 2010/2011\nby Daniel Süpke, Frederik Kramer\n\nhttp://suepke.eu/ "
+								+ "\n Die Entfernung\n zur ausgewählten Mensa\n beträgt zur Zeit: "
+								+ distance + "km")
+						.setCancelable(false)
+						.setPositiveButton("Ok",
+								new DialogInterface.OnClickListener() {
+									public void onClick(DialogInterface dialog,
+											int id) {
+										dialog.dismiss();
+									}
+								});
+				builder.create();
+			} catch (Exception e) {
+				Log.i("Location", e.toString());
+			}
 			builder.show();
 			return true;
 		default:
@@ -217,7 +233,17 @@ public class YeOldeMensa extends Activity {
 	private void refresh() {
 		try {
 			this.mensa[selectedMensa].refresh();
-		} catch (IOException e) {
+
+			// Display last actualisation date
+			String date = new SimpleDateFormat("dd.MM.yyyy HH:mm")
+					.format(new Date());
+			((TextView) findViewById(R.id.headerdate)).setText("Aktualisiert "
+					+ date);
+
+			// Display current Mensa name
+			((TextView) findViewById(R.id.headermensa))
+					.setText(this.mensa[selectedMensa].getName());
+		} catch (Exception e) {
 			Log.d("yom",
 					"Exception while retrieving menu data: " + e.getMessage());
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -236,51 +262,4 @@ public class YeOldeMensa extends Activity {
 			builder.show();
 		}
 	}
-
-	/**
-	 * Draws the menu based on the data in this.mensaMenu
-	 */
-	private void refreshView() {
-		// TODO: Clean up this mess. Very slow and unintuitive use of the
-		// mergeadapter contents due to a bug I was fighting with.
-		ArrayAdapter<String> a;
-
-		adapter = new MergeAdapter();
-
-		((TextView) findViewById(R.id.headermensa))
-				.setText(mensa[selectedMensa].getName());
-		
-		if (mensa[selectedMensa].isEmpty()) {
-			List<String> list = new ArrayList<String>();
-			
-			list.add("Kein Menü gefunden. Mensa geschlossen?");
-			a = new ArrayAdapter<String>(this, R.layout.list_header,
-					list);
-			adapter.addAdapter(a);
-		}
-
-		for (String menuType : mensa[selectedMensa].getMenu().keySet()) {
-			List<String> list = new ArrayList<String>();
-			list.add(menuType);
-			a = new ArrayAdapter<String>(this, R.layout.list_header, list);
-			adapter.addAdapter(a);
-			a = new ArrayAdapter<String>(this, R.layout.list_item,
-					mensa[selectedMensa].getMenuItems(menuType));
-			adapter.addAdapter(a);
-		}
-
-		adapter.notifyDataSetChanged();
-		((ListView) findViewById(R.id.menu_list)).setAdapter(adapter);
-		((TextView) findViewById(R.id.headerdate)).setText(mensa[selectedMensa]
-				.getDate());
-
-		// Keep this for now, I think I can use it to improve the list creation
-		// with mergeadapter
-		/*
-		 * if (mensa == 0) ((TextView) findViewById(R.id.headermensa))
-		 * .setText("Mensa Uhlhornsweg"); else ((TextView)
-		 * findViewById(R.id.headermensa)) .setText("Mensa Wechloy");
-		 */
-	}
-	
 }

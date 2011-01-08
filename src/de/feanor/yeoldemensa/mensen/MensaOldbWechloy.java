@@ -1,5 +1,5 @@
 /**
-  *   Ye Olde Mensa is an android application for displaying the current
+ *   Ye Olde Mensa is an android application for displaying the current
  *   mensa plans of University Oldenburg on an android mobile phone.
  *   
  *   Copyright (C) 2009/2010 Daniel Süpke
@@ -25,6 +25,7 @@ import java.net.URL;
 
 import de.feanor.htmltokenizer.SimpleHTMLTokenizer;
 import de.feanor.yeoldemensa.Mensa;
+import de.feanor.yeoldemensa.MenuItem;
 
 /**
  * @author Daniel Süpke
@@ -34,8 +35,8 @@ public class MensaOldbWechloy extends Mensa {
 
 	public static final int HAUPTGERICHTE = 0, BEILAGEN = 1;
 	public static double lat = 53.152147;
-	public static double lng = 8.165046; 
-    
+	public static double lng = 8.165046;
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -43,6 +44,8 @@ public class MensaOldbWechloy extends Mensa {
 	 */
 	@Override
 	protected void loadMenu() throws IOException {
+		Day day = Day.MONDAY;
+
 		SimpleHTMLTokenizer tokenizer = new SimpleHTMLTokenizer(
 				new URL(
 						"http://www.studentenwerk-oldenburg.de/speiseplan/oldenburg-heute.php"),
@@ -58,7 +61,7 @@ public class MensaOldbWechloy extends Mensa {
 		while ((element = tokenizer.nextText()) != null
 				&& !element.startsWith("Mensa Wechloy"))
 			;
-		
+
 		// Skip date
 		tokenizer.nextText();
 
@@ -84,7 +87,7 @@ public class MensaOldbWechloy extends Mensa {
 					tokenizer.pushBack();
 			}
 
-			this.addMenuItem(getMenuType(menuType), element);
+			this.addMenuItem(new MenuItem(day, getMenuType(menuType), element));
 		}
 	}
 
@@ -103,13 +106,13 @@ public class MensaOldbWechloy extends Mensa {
 	protected String getName() {
 		return "Mensa Wechloy";
 	}
-	
+
 	@Override
 	public double[] getCoordinates() {
-	double[] coordinates = new double[2];
-	coordinates[0] = lat;
-	coordinates[1] = lng;
-    return coordinates;
+		double[] coordinates = new double[2];
+		coordinates[0] = lat;
+		coordinates[1] = lng;
+		return coordinates;
 	}
 
 }

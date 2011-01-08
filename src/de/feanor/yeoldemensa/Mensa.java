@@ -21,9 +21,7 @@
 package de.feanor.yeoldemensa;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +32,14 @@ import java.util.Map;
  */
 public abstract class Mensa {
 
-	private Map<String, List<String>> menu = new HashMap<String, List<String>>();
+	public enum Day {
+		MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY
+	};
+
+	// Map<Day, Map<type, List<menuItem>>>
+	// So, it's a map of weekdays with the menu-map, consiting of the menu types
+	// and menu items
+	private Map<Day, Map<String, List<String>>> menu = new HashMap<Day, Map<String, List<String>>>();
 
 	/**
 	 * Adds a menu item to a the food items. Example: addMenuItem("Ausgabe A",
@@ -46,49 +51,53 @@ public abstract class Mensa {
 	 * @param menuItem
 	 *            Menu item (food) to add
 	 */
-	protected void addMenuItem(String type, String menuItem) {
-		List<String> menuList = menu.get(type);
+	protected void addMenuItem(MenuItem menuItem) {
+		Map<String, List<String>> dayMenu = menu.get(menuItem.day);
+
+		if (dayMenu == null) {
+			dayMenu = new HashMap<String, List<String>>();
+			menu.put(menuItem.day, dayMenu);
+		}
+
+		List<String> menuList = dayMenu.get(menuItem.type);
 
 		if (menuList == null) {
 			menuList = new ArrayList<String>();
-			menu.put(type, menuList);
+			dayMenu.put(menuItem.type, menuList);
 		}
 
 		// Avoid double items
-		if (!menuList.contains(menuItem)) {
-			menuList.add(menuItem);
+		if (!menuList.contains(menuItem.item)) {
+			menuList.add(menuItem.item);
 		}
 	}
 
-	public Map<String, List<String>> getMenu() {
-		return menu;
+	public Map<String, List<String>> getMenuForDay(Day day) {
+		return menu.get(day);
 	}
 
-	public List<String> getMenuItems(String type) {
-		return menu.get(type);
+	public List<String> getMenuforDayType(Day day, String type) {
+		return menu.get(day).get(type);
 	}
 
 	public void refresh() throws IOException {
 		menu.clear();
+
+		// Set up hashmaps for each week day
+		for (Day day : Day.values())
+			menu.put(day, new HashMap<String, List<String>>());
+
 		loadMenu();
 	}
-	
+
 	public boolean isEmpty() {
 		return menu.isEmpty();
 	}
 
-	/**
-	 * @return the date
-	 */
-	public String getDate() {
-		// TODO Support more than a single day
-		return new SimpleDateFormat("dd.MM.yyyy").format(new Date());
-	}
-	
 	/***
 	 * @return coordinates of the Mensa
 	 */
-	
+
 	public abstract double[] getCoordinates() throws Exception;
 
 	/**

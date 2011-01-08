@@ -25,6 +25,7 @@ import java.net.URL;
 
 import de.feanor.htmltokenizer.SimpleHTMLTokenizer;
 import de.feanor.yeoldemensa.Mensa;
+import de.feanor.yeoldemensa.MenuItem;
 
 /**
  * @author Daniel Süpke
@@ -36,91 +37,46 @@ public class MensaOldbUhlhornsweg extends Mensa {
 			BEILAGEN = 3;
 	public static double lat = 53.147372;
 	public static double lng = 8.179326;
-	    
+
 	@Override
 	protected void loadMenu() throws IOException {
 		SimpleHTMLTokenizer tokenizer = new SimpleHTMLTokenizer(
 				new URL(
-						"http://www.studentenwerk-oldenburg.de/speiseplan/oldenburg-heute.php"),
+						"http://www.studentenwerk-oldenburg.de/speiseplan/uhlhornsweg-ausgabe-a.php"),
 				"iso-8859-1");
 		String element;
-		int menuType = 0;
 
-		// Retrieve date
-		while ((element = tokenizer.nextTag()) != null) {
-			if (element.contains("h3")) {
-				// Not supported yet
-				tokenizer.nextText();
-				/*
-				 * date = tokenizer.nextText(); date = "Menü vom " +
-				 * date.substring(19, 31);
-				 */
-				break;
-			}
-		}
-
-		// MENSA_UHLHORNSWEG
 		while ((element = tokenizer.nextText()) != null
-				&& !element.startsWith("Mensa Wechloy")) {
-			
-			if (element.startsWith("Ausgabe")) {
-				// Ausgabe ignorieren
-			} else if (element.startsWith("Alternativ"))
-				menuType = AUSGABE_A;
-			else if (element.startsWith("Pasta"))
-				menuType = AUSGABE_A;
-			else if (element.startsWith("Auswahl"))
-				menuType = AUSGABE_B;
-			else if (element.startsWith("Schälchen")
-					|| element.startsWith("Beilagen"))
-				menuType = BEILAGEN;
-			else if (element.startsWith("Culinarium"))
-				menuType = CULINARIUM;
-			else {
-				String token = tokenizer.nextText();
+				&& !element.equals("1,40"))
+			;
 
-				// TODO: Fucked up code. Fix with RegExp or whatever
-				if (token != null) {
-					if ((token.startsWith("1") || token.startsWith("2")
-							|| token.startsWith("3") || token.startsWith("4")
-							|| token.startsWith("5") || token.startsWith("6")
-							|| token.startsWith("7") || token.startsWith("8") || token
-							.startsWith("9")))
-						element += " " + token;
-					else
-						tokenizer.pushBack();
-				}
+		for (int i = 0; i < 5; i++) {
+			this.addMenuItem(new MenuItem(Day.values()[i], "Alternativ (1,40)",
+					tokenizer.nextText()));
+		}
 
-				this.addMenuItem(getMenuType(menuType), element);
+		while ((element = tokenizer.nextText()) != null
+				&& !element.equals("2,00"))
+			;
+
+		for (int i = 0; i < 5; i++) {
+			for (int j = 0; j < 5; j++) {
+				this.addMenuItem(new MenuItem(Day.values()[i], "Pasta (2,00)",
+						tokenizer.nextText()));
 			}
 		}
-	}
-
-	private String getMenuType(int menuType) {
-		switch (menuType) {
-		case AUSGABE_A:
-			return "Alternativ/Pasta";
-		case AUSGABE_B:
-			return "Auswahl";
-		case BEILAGEN:
-			return "Beilagen (0,30)";
-		case CULINARIUM:
-			return "Culinarium";
-		}
-
-		return null;
 	}
 
 	@Override
 	protected String getName() {
 		return "Mensa Uhlhornsweg";
 	}
-	
+
 	@Override
 	public double[] getCoordinates() {
-	double[] coordinates = new double[2];
-	coordinates[0] = lat;
-	coordinates[1] = lng;
-    return coordinates;
+		double[] coordinates = new double[2];
+		coordinates[0] = lat;
+		coordinates[1] = lng;
+		return coordinates;
 	}
 }

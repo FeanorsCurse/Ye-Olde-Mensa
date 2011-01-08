@@ -25,6 +25,7 @@ import java.net.URL;
 
 import de.feanor.htmltokenizer.SimpleHTMLTokenizer;
 import de.feanor.yeoldemensa.Mensa;
+import de.feanor.yeoldemensa.MenuItem;
 
 /**
  * @author Frederik Kramer
@@ -35,6 +36,7 @@ public class MensaMagdbHerren extends Mensa {
 	public static final int HAUPTGERICHTE = 0, BEILAGEN = 1;
 	public static double lat = 52.141074;
 	public static double lng = 11.64834;
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -42,6 +44,8 @@ public class MensaMagdbHerren extends Mensa {
 	 */
 	@Override
 	protected void loadMenu() throws IOException {
+		Day day = Day.MONDAY;
+
 		SimpleHTMLTokenizer tokenizer = new SimpleHTMLTokenizer(
 				new URL(
 						"http://www.studentenwerk-magdeburg.de/deutsch/essen_trinken/speiseplan/seiten/magdeburg_herrenkrug.aspx"),
@@ -51,21 +55,26 @@ public class MensaMagdbHerren extends Mensa {
 
 		// Skip to Hauptgerichte Start
 		while ((element = tokenizer.nextText()) != null) {
-			if (((element.startsWith("Essen1")) || (element.startsWith("Essen2")) || (element.startsWith("Essen3")) || (element.startsWith("Essen4"))) && ((element = tokenizer.nextText()) != null)) {
+			if (((element.startsWith("Essen1"))
+					|| (element.startsWith("Essen2"))
+					|| (element.startsWith("Essen3")) || (element
+					.startsWith("Essen4")))
+					&& ((element = tokenizer.nextText()) != null)) {
 				if ((output = tokenizer.nextText()) != null) {
-					output = element +" "+ output;
-				}
-				else {
+					output = element + " " + output;
+				} else {
 					output = element;
 				}
-				this.addMenuItem(getMenuType(menuType), output);
+				this.addMenuItem(new MenuItem(day, getMenuType(menuType),
+						output));
 			}
-			if (element.startsWith("Beilagen:") && element.length() > 9){
+			if (element.startsWith("Beilagen:") && element.length() > 9) {
 				element = element.replaceAll("Beilagen: ", "");
 				String[] elements = element.split(", ");
 				menuType = BEILAGEN;
-				for (int i=0; i < elements.length; i++) {
-					this.addMenuItem(getMenuType(menuType), elements[i]);
+				for (int i = 0; i < elements.length; i++) {
+					this.addMenuItem(new MenuItem(day, getMenuType(menuType),
+							elements[i]));
 				}
 			}
 		}
@@ -86,13 +95,13 @@ public class MensaMagdbHerren extends Mensa {
 	protected String getName() {
 		return "Mensa Herrenkrug Magdeburg";
 	}
-	
+
 	@Override
 	public double[] getCoordinates() {
-	double[] coordinates = new double[2];
-	coordinates[0] = lat;
-	coordinates[1] = lng;
-    return coordinates;
+		double[] coordinates = new double[2];
+		coordinates[0] = lat;
+		coordinates[1] = lng;
+		return coordinates;
 	}
 
 }
