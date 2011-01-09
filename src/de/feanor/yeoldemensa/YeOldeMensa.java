@@ -21,6 +21,7 @@
 package de.feanor.yeoldemensa;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 import android.app.Activity;
@@ -30,13 +31,11 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TabHost;
-import android.widget.TabHost.TabContentFactory;
 import android.widget.TabHost.TabSpec;
 import android.widget.TextView;
 import de.compserve.gsmhelper.SimpleGSMHelper;
@@ -98,14 +97,13 @@ public class YeOldeMensa extends Activity {
 		host.addTab(createTab(host, "Donnerstag", menuDayView[3]));
 		host.addTab(createTab(host, "Freitag", menuDayView[4]));
 
-		// adjust tab size. Unsure how this looks in different resolutions
-		for (int i = 0; i < 5; i++) {
-			// host.getTabWidget().getChildAt(i).getLayoutParams().height = 60;
-			// host.getTabWidget().getChildAt(i).setBackgroundColor(Color.parseColor("#000077"));
-			// //unselected
-		}
-		// host.getTabWidget().getChildAt(host.getCurrentTab()).setBackgroundColor(Color.parseColor("#0000FF"));
-		// // selected
+		// Select tab for current day or Monday on weekends
+		int currentDay = Calendar.getInstance().get(Calendar.DAY_OF_WEEK); 
+		
+		if (currentDay >= Calendar.MONDAY && currentDay <= Calendar.FRIDAY)
+			host.setCurrentTab(currentDay-2);
+		else
+			host.setCurrentTab(Calendar.MONDAY-2);
 	}
 
 	private TabSpec createTab(TabHost host, String title,
@@ -113,7 +111,7 @@ public class YeOldeMensa extends Activity {
 		View view = getLayoutInflater().inflate(R.layout.tabs_bg, null);
 		TextView textView = (TextView) view.findViewById(R.id.tabsText);
 		textView.setText(title);
-		
+
 		return host.newTabSpec(title).setIndicator(view)
 				.setContent(new TabHost.TabContentFactory() {
 
