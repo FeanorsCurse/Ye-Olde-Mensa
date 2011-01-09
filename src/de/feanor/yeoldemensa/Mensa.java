@@ -23,7 +23,7 @@ package de.feanor.yeoldemensa;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -40,7 +40,7 @@ public abstract class Mensa {
 	// Map<Day, Map<type, List<menuItem>>>
 	// So, it's a map of weekdays with the menu-map, consiting of the menu types
 	// and menu items
-	private Map<Day, Map<String, List<String>>> menu = new HashMap<Day, Map<String, List<String>>>();
+	private Map<Day, Map<String, List<String>>> menu = new LinkedHashMap<Day, Map<String, List<String>>>();
 
 	/**
 	 * Adds a menu item to a the food items. Example: addMenuItem("Ausgabe A",
@@ -56,7 +56,7 @@ public abstract class Mensa {
 		Map<String, List<String>> dayMenu = menu.get(menuItem.day);
 
 		if (dayMenu == null) {
-			dayMenu = new HashMap<String, List<String>>();
+			dayMenu = new LinkedHashMap<String, List<String>>();
 			menu.put(menuItem.day, dayMenu);
 		}
 
@@ -86,7 +86,7 @@ public abstract class Mensa {
 
 		// Set up hashmaps for each week day
 		for (Day day : Day.values())
-			menu.put(day, new HashMap<String, List<String>>());
+			menu.put(day, new LinkedHashMap<String, List<String>>());
 
 		loadMenu();
 	}
