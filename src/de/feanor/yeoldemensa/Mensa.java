@@ -22,6 +22,7 @@ package de.feanor.yeoldemensa;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +35,7 @@ public abstract class Mensa {
 
 	public enum Day {
 		MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY
-	};
+	}
 
 	// Map<Day, Map<type, List<menuItem>>>
 	// So, it's a map of weekdays with the menu-map, consiting of the menu types
@@ -90,8 +91,25 @@ public abstract class Mensa {
 		loadMenu();
 	}
 
-	public boolean isEmpty() {
-		return menu.isEmpty();
+	/**
+	 * Return true if there is no menu data for the given day.
+	 * @param day Day to check
+	 * @return True if no menu
+	 */
+	public boolean isEmpty(Day day) {
+		return menu.get(day).isEmpty();
+	}
+
+	/**
+	 * Return true, if it's currently weekend, so the next week's plans should
+	 * be fetched instead of the current week.
+	 * 
+	 * @return True, if next week should be fetched
+	 */
+	protected boolean getNextWeek() {
+		int dayOfWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
+
+		return dayOfWeek == Calendar.SATURDAY || dayOfWeek == Calendar.SUNDAY;
 	}
 
 	/***
@@ -103,6 +121,9 @@ public abstract class Mensa {
 	/**
 	 * Load the menu, usually by parsing a web site. Use addMenuItem(String
 	 * type, String menuItem) to add items.
+	 * 
+	 * Use getNextWeek() to test if the current or next week's plans should be
+	 * fetched.
 	 * 
 	 * @see Mensa.addMenuItem(String type, String menuItem)
 	 * @throws IOException

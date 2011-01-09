@@ -39,7 +39,9 @@ public class MenuDayView extends ListView {
 
 		adapter = new MergeAdapter();
 
-		if (context.getCurrentMensa().isEmpty()) {
+		// If there is no menu data, display message to user and set up empty
+		// dummy adapter to avoid error
+		if (context.getCurrentMensa().isEmpty(day)) {
 			List<String> list = new ArrayList<String>();
 
 			list.add("Kein Menü gefunden. Mensa geschlossen?");
