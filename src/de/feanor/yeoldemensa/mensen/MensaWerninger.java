@@ -23,6 +23,7 @@ package de.feanor.yeoldemensa.mensen;
 import java.io.IOException;
 import java.net.URL;
 
+import de.feanor.htmltokenizer.Element;
 import de.feanor.htmltokenizer.SimpleHTMLTokenizer;
 import de.feanor.yeoldemensa.Mensa;
 import de.feanor.yeoldemensa.MenuItem;
@@ -50,27 +51,29 @@ public class MensaWerninger extends Mensa {
 				new URL(
 						"http://www.studentenwerk-magdeburg.de/deutsch/essen_trinken/speiseplan/seiten/mensa_wernigerode.aspx"),
 				"utf-8");
-		String element, output;
+		Element element;
+		String output;
 		int menuType = HAUPTGERICHTE;
 
 		// Skip to Hauptgerichte Start
 		while ((element = tokenizer.nextText()) != null) {
-			if (((element.startsWith("Essen1"))
-					|| (element.startsWith("Essen2"))
-					|| (element.startsWith("Essen3")) || (element
+			if (((element.content.startsWith("Essen1"))
+					|| (element.content.startsWith("Essen2"))
+					|| (element.content.startsWith("Essen3")) || (element.content
 					.startsWith("Essen4")))
 					&& ((element = tokenizer.nextText()) != null)) {
-				if ((output = tokenizer.nextText()) != null) {
-					output = element + " " + output;
+				if ((output = tokenizer.nextText().content) != null) {
+					output = element.content + " " + output;
 				} else {
-					output = element;
+					output = element.content;
 				}
 				this.addMenuItem(new MenuItem(day, getMenuType(menuType),
 						output));
 			}
-			if (element.startsWith("Beilagen:") && element.length() > 9) {
-				element = element.replaceAll("Beilagen: ", "");
-				String[] elements = element.split(", ");
+			if (element.content.startsWith("Beilagen:")
+					&& element.content.length() > 9) {
+				String element2 = element.content.replaceAll("Beilagen: ", "");
+				String[] elements = element2.split(", ");
 				menuType = BEILAGEN;
 				for (int i = 0; i < elements.length; i++) {
 					this.addMenuItem(new MenuItem(day, getMenuType(menuType),

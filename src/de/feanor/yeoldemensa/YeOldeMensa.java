@@ -98,12 +98,12 @@ public class YeOldeMensa extends Activity {
 		host.addTab(createTab(host, "Freitag", menuDayView[4]));
 
 		// Select tab for current day or Monday on weekends
-		int currentDay = Calendar.getInstance().get(Calendar.DAY_OF_WEEK); 
-		
+		int currentDay = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
+
 		if (currentDay >= Calendar.MONDAY && currentDay <= Calendar.FRIDAY)
-			host.setCurrentTab(currentDay-2);
+			host.setCurrentTab(currentDay - 2);
 		else
-			host.setCurrentTab(Calendar.MONDAY-2);
+			host.setCurrentTab(Calendar.MONDAY - 2);
 	}
 
 	private TabSpec createTab(TabHost host, String title,
@@ -236,8 +236,8 @@ public class YeOldeMensa extends Activity {
 					"Exception while retrieving menu data: " + e.getMessage());
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setMessage(
-					"Fehler beim Auslesen der Mensa-Webseite: "
-							+ e.getMessage())
+					"Fehler beim Auslesen der Mensa-Webseite!\nWahrscheinlich wurde die Mensa-Webseite geändert (liegt leider ausserhalb unserer Kontrolle, bitte auf Update warten oder Mail an yeoldemensa@suepke.eu).\n\nDetail: "
+							+ e)
 					.setCancelable(false)
 					.setPositiveButton("Ok",
 							new DialogInterface.OnClickListener() {

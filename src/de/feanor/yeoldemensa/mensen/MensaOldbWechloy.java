@@ -23,6 +23,7 @@ package de.feanor.yeoldemensa.mensen;
 import java.io.IOException;
 import java.net.URL;
 
+import de.feanor.htmltokenizer.Element;
 import de.feanor.htmltokenizer.SimpleHTMLTokenizer;
 import de.feanor.yeoldemensa.Mensa;
 import de.feanor.yeoldemensa.MenuItem;
@@ -33,7 +34,6 @@ import de.feanor.yeoldemensa.MenuItem;
  */
 public class MensaOldbWechloy extends Mensa {
 
-	public static final int HAUPTGERICHTE = 0, BEILAGEN = 1;
 	public static double lat = 53.152147;
 	public static double lng = 8.165046;
 
@@ -44,62 +44,51 @@ public class MensaOldbWechloy extends Mensa {
 	 */
 	@Override
 	protected void loadMenu() throws IOException {
-		Day day = Day.MONDAY;
-
 		SimpleHTMLTokenizer tokenizer = new SimpleHTMLTokenizer(
 				new URL(
-						"http://www.studentenwerk-oldenburg.de/speiseplan/oldenburg-heute.php"),
+						"http://www.studentenwerk-oldenburg.de/speiseplan/wechloy.php"),
 				"iso-8859-1");
-		String element;
-		int menuType = HAUPTGERICHTE;
 
-		// TODO: Currently assuming, Mensa Wechloy always
-		// has two main items.
-		int count = 0;
-
-		// Skip to Wechloy start
-		while ((element = tokenizer.nextText()) != null
-				&& !element.startsWith("Mensa Wechloy"))
-			;
-
-		// Skip date
-		tokenizer.nextText();
-
-		while ((element = tokenizer.nextText()) != null
-				&& !element.startsWith("Mensa Ofener")) {
-			// TODO: Currently assuming, Mensa Wechloy always
-			// has two main items.
-			if (count++ == 2) {
-				menuType = BEILAGEN;
-			}
-
-			String token = tokenizer.nextText();
-
-			// TODO: Fucked up code. Fix with RegExp or whatever
-			if (token != null) {
-				if ((token.startsWith("1") || token.startsWith("2")
-						|| token.startsWith("3") || token.startsWith("4")
-						|| token.startsWith("5") || token.startsWith("6")
-						|| token.startsWith("7") || token.startsWith("8") || token
-						.startsWith("9")))
-					element += " " + token;
-				else
-					tokenizer.pushBack();
-			}
-
-			this.addMenuItem(new MenuItem(day, getMenuType(menuType), element));
+		// Skip to next week instead?
+		Element element;
+		if (getNextWeek()) {
+			while ((element = tokenizer.nextText()) != null
+					&& !element.content.startsWith("Nächste Woche"))
+				;
 		}
+
+		addColumn("gericht", "Hauptgericht", 140, tokenizer);
+		addColumn("0,45", "Beilagen (0,45)", 45, tokenizer); // Beilagen
+		addColumn("0,45", "Beilagen (0,45)", 45, tokenizer); // Gemüse
+		addColumn("0,45", "Beilagen (0,45)", 45, tokenizer); // Salat
+		addColumn("0,45", "Beilagen (0,45)", 45, tokenizer); // Suppe
+		addColumn("0,45", "Beilagen (0,45)", 45, tokenizer); // Dessert
 	}
 
-	private String getMenuType(int menuType) {
-		switch (menuType) {
-		case HAUPTGERICHTE:
-			return "Hauptgerichte";
-		case BEILAGEN:
-			return "Beilagen (0,30)";
-		}
+	private void addColumn(String delimeter, String type, int price,
+			SimpleHTMLTokenizer tokenizer) {
+		Element element;
 
-		return null;
+		// Skip to beginning based on delimeter
+		while ((element = tokenizer.nextText()) != null
+				&& !element.content.equals(delimeter))
+			;
+		while ((element = tokenizer.nextTag()) != null
+				&& !element.content.equals("/td"))
+			;
+
+		// Start adding items for each week day
+		for (int i = 0; i < 5; i++) {
+			element = tokenizer.nextElement();
+
+			while (element.isText() || !element.content.equals("/td")) {
+				if (element.isText()) {
+					this.addMenuItem(new MenuItem(Day.values()[i], type,
+							element.content, price));
+				}
+				element = tokenizer.nextElement();
+			}
+		}
 	}
 
 	@Override
@@ -114,5 +103,4 @@ public class MensaOldbWechloy extends Mensa {
 		coordinates[1] = lng;
 		return coordinates;
 	}
-
 }
