@@ -65,9 +65,11 @@ public class SimpleHTMLTokenizer {
 					}
 				}
 
-				// Remove whitespace at end
-				if (buf[size - 1] == ' ')
-					size--;
+				// Remove attributes
+				for (int i = 0; i < size-1; i++) {
+					if (buf[i] == ' ')
+						size = i;
+				}
 
 				elementList.add(new Element(TAG, new String(buf, 0, size)
 						.toLowerCase()));
@@ -107,12 +109,12 @@ public class SimpleHTMLTokenizer {
 	 * 
 	 * @return Next html tag
 	 */
-	public String nextTag() {
+	public Element nextTag() {
 		Element element;
 
 		while (elements.hasNext()) {
 			if ((element = elements.next()).isTag())
-				return element.content;
+				return element;
 		}
 
 		return null;
@@ -123,12 +125,12 @@ public class SimpleHTMLTokenizer {
 	 * 
 	 * @return Next text element
 	 */
-	public String nextText() {
+	public Element nextText() {
 		Element element;
 
 		while (elements.hasNext()) {
 			if ((element = elements.next()).isText())
-				return element.content;
+				return element;
 		}
 
 		return null;
