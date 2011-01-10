@@ -92,7 +92,7 @@ public class MensaOldbWechloy extends Mensa {
 	}
 
 	@Override
-	protected String getName() {
+	public String getName() {
 		return "Mensa Wechloy";
 	}
 

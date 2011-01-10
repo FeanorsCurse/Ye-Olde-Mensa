@@ -95,7 +95,7 @@ public class MensaWerninger extends Mensa {
 	}
 
 	@Override
-	protected String getName() {
+	public String getName() {
 		return "Mensa Werningerode";
 	}
 

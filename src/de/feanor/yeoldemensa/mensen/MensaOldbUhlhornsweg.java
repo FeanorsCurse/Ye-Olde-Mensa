@@ -186,7 +186,7 @@ public class MensaOldbUhlhornsweg extends Mensa {
 	}
 
 	@Override
-	protected String getName() {
+	public String getName() {
 		return "Mensa Uhlhornsweg";
 	}
 

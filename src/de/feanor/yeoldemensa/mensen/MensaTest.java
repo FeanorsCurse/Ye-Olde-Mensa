@@ -46,7 +46,7 @@ public class MensaTest extends Mensa {
 	}
 
 	@Override
-	protected String getName() {
+	public String getName() {
 		return "Test-Mensa";
 	}
 

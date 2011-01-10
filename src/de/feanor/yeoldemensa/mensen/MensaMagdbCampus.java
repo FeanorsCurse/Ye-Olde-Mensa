@@ -96,7 +96,7 @@ public class MensaMagdbCampus extends Mensa {
 	}
 
 	@Override
-	protected String getName() {
+	public String getName() {
 		return "Mensa Campus Magdeburg";
 	}
 

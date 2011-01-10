@@ -93,7 +93,9 @@ public abstract class Mensa {
 
 	/**
 	 * Return true if there is no menu data for the given day.
-	 * @param day Day to check
+	 * 
+	 * @param day
+	 *            Day to check
 	 * @return True if no menu
 	 */
 	public boolean isEmpty(Day day) {
@@ -112,12 +114,6 @@ public abstract class Mensa {
 		return dayOfWeek == Calendar.SATURDAY || dayOfWeek == Calendar.SUNDAY;
 	}
 
-	/***
-	 * @return coordinates of the Mensa
-	 */
-
-	public abstract double[] getCoordinates() throws Exception;
-
 	/**
 	 * Load the menu, usually by parsing a web site. Use addMenuItem(String
 	 * type, String menuItem) to add items.
@@ -130,11 +126,24 @@ public abstract class Mensa {
 	 */
 	protected abstract void loadMenu() throws IOException;
 
+	/***
+	 * @return coordinates of the Mensa
+	 */
+	public abstract double[] getCoordinates() throws Exception;
+
 	/**
 	 * Return the name of the Mensa, e.g. "Mensa Oldenburg"
 	 * 
 	 * @return Name of the Mensa
 	 */
-	protected abstract String getName();
+	public abstract String getName();
 
+	/**
+	 * Return the name of the town where the Mensa is in. Used to build groups
+	 * of Mensas in the same town.
+	 * 
+	 * @return Name of the Mensa's town
+	 */
+	// TODO
+	//public abstract String getTown();
 }
