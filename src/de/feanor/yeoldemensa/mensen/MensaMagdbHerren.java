@@ -23,6 +23,8 @@ package de.feanor.yeoldemensa.mensen;
 import java.io.IOException;
 import java.net.URL;
 
+import android.content.Context;
+
 import de.feanor.htmltokenizer.Element;
 import de.feanor.htmltokenizer.SimpleHTMLTokenizer;
 import de.feanor.yeoldemensa.Mensa;
@@ -38,13 +40,18 @@ public class MensaMagdbHerren extends Mensa {
 	public static double lat = 52.141074;
 	public static double lng = 11.64834;
 
+	public MensaMagdbHerren(Context context) {
+		super(context);
+		// TODO Auto-generated constructor stub
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see de.feanor.yeoldemensa.Mensa#loadMenu(java.util.Map)
 	 */
 	@Override
-	protected void loadMenu() throws IOException {
+	protected void fetchMenu() throws IOException {
 		Day day = Day.MONDAY;
 
 		SimpleHTMLTokenizer tokenizer = new SimpleHTMLTokenizer(
@@ -105,6 +112,12 @@ public class MensaMagdbHerren extends Mensa {
 		coordinates[0] = lat;
 		coordinates[1] = lng;
 		return coordinates;
+	}
+	
+
+	@Override
+	public int getID() {
+		return 3;
 	}
 
 }

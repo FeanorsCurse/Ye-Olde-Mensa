@@ -22,12 +22,18 @@ package de.feanor.yeoldemensa.mensen;
 import java.io.IOException;
 import java.util.Random;
 
+import android.content.Context;
 import android.util.Log;
 
 import de.feanor.yeoldemensa.Mensa;
 import de.feanor.yeoldemensa.MenuItem;
 
 public class MensaTest extends Mensa {
+
+	public MensaTest(Context context) {
+		super(context);
+		// TODO Auto-generated constructor stub
+	}
 
 	@Override
 	public double[] getCoordinates() throws Exception {
@@ -36,9 +42,9 @@ public class MensaTest extends Mensa {
 	}
 
 	@Override
-	protected void loadMenu() throws IOException {
+	protected void fetchMenu() throws IOException {
 		Log.d("yom", "loading menu");
-		
+
 		for (Day day : Day.values()) {
 			addMenuItem(new MenuItem(day, "Alternativ/Pasta",
 					"Alternativessen Blubb (1,40)"));
@@ -52,11 +58,13 @@ public class MensaTest extends Mensa {
 			int rand = new Random().nextInt(4) + 1;
 
 			for (int i = 0; i < rand; i++) {
-				addMenuItem(new MenuItem(day, "Beilagen", "Schälchen Pampe " + (i+1)));
+				addMenuItem(new MenuItem(day, "Beilagen", "Schälchen Pampe "
+						+ (i + 1)));
 			}
-			
+
 			if (day == Day.MONDAY)
-				addMenuItem(new MenuItem(day, "Beilagen", "Montagsschälchen Pampe"));
+				addMenuItem(new MenuItem(day, "Beilagen",
+						"Montagsschälchen Pampe"));
 
 			addMenuItem(new MenuItem(day, "Culinarium", "Lecker teures Essen"));
 			addMenuItem(new MenuItem(day, "Culinarium",
@@ -69,4 +77,8 @@ public class MensaTest extends Mensa {
 		return "Test-Mensa";
 	}
 
+	@Override
+	public int getID() {
+		return -1;
+	}
 }

@@ -26,19 +26,17 @@ import java.util.Date;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TabHost;
-import android.widget.TabHost.TabSpec;
 import android.widget.TextView;
-import de.compserve.gsmhelper.SimpleGSMHelper;
+import android.widget.TabHost.TabSpec;
 import de.feanor.yeoldemensa.Mensa.Day;
 import de.feanor.yeoldemensa.mensen.MensaMagdbCampus;
 import de.feanor.yeoldemensa.mensen.MensaMagdbHerren;
@@ -54,18 +52,19 @@ import de.feanor.yeoldemensa.mensen.MensaWerninger;
 public class YeOldeMensa extends Activity {
 
 	public static final String VERSION = "0.9";
-	public SimpleGSMHelper gsm = new SimpleGSMHelper();
+	// suepke: Keeps crashing my phone
+	//public SimpleGSMHelper gsm = new SimpleGSMHelper();
 
 	// ADD YOUR MENSA HERE, THE REST IS DONE THROUGH MAGIC
-	private Mensa[] mensa = { new MensaOldbUhlhornsweg(),
-			new MensaOldbWechloy(), new MensaMagdbCampus(),
-			new MensaMagdbHerren(), new MensaWerninger(), new MensaStendal() };
+	private Mensa[] mensa = { new MensaOldbUhlhornsweg(this),
+			new MensaOldbWechloy(this), new MensaMagdbCampus(this),
+			new MensaMagdbHerren(this), new MensaWerninger(this), new MensaStendal(this) };
 
 	// Use this for testing
 	// private Mensa[] mensa = { new MensaTest() };
 
 	// currently selected mensa index
-	private int selectedMensa = 0;
+	private int selectedMensa;
 
 	// One for each day of the week
 	private MenuDayView[] menuDayView = new MenuDayView[5];
@@ -74,14 +73,19 @@ public class YeOldeMensa extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		Log.d("yom", "### Starting application ###");
 		setContentView(R.layout.main);
 
+		// Retrieve selected mensa
+		SharedPreferences settings = getSharedPreferences("yom_prefs", 0);
+		selectedMensa = settings.getInt("selected mensa", 0);
+
 		// Load current Mensa
-		refresh();
+		loadMenu(false);
 
 		// setCurrentCoordinates;
-		TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-		gsm.setMobileLocation(tm);
+		//TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+		//gsm.setMobileLocation(tm);
 
 		// Set up tabs
 		TabHost host = (TabHost) findViewById(R.id.tabhost);
@@ -112,8 +116,8 @@ public class YeOldeMensa extends Activity {
 		TextView textView = (TextView) view.findViewById(R.id.tabsText);
 		textView.setText(title);
 
-		return host.newTabSpec(title).setIndicator(view)
-				.setContent(new TabHost.TabContentFactory() {
+		return host.newTabSpec(title).setIndicator(view).setContent(
+				new TabHost.TabContentFactory() {
 
 					public View createTabContent(String tag) {
 						return menuDayView2;
@@ -143,7 +147,7 @@ public class YeOldeMensa extends Activity {
 
 		switch (item.getItemId()) {
 		case R.id.refresh:
-			refresh();
+			loadMenu(true);
 			// refreshView();
 			return true;
 
@@ -166,12 +170,18 @@ public class YeOldeMensa extends Activity {
 			builder.setPositiveButton("Ok",
 					new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int id) {
-							refresh();
+							loadMenu(false);
 
 							for (int i = 0; i < 5; i++) {
 								menuDayView[i].refreshView();
 							}
-							// refreshView();
+
+							// Store selected mensa
+							SharedPreferences settings = getSharedPreferences("yom_prefs", 0);
+							SharedPreferences.Editor editor = settings.edit();
+							editor.putInt("selected mensa", selectedMensa);
+							editor.commit();
+
 							dialog.dismiss();
 						}
 					});
@@ -184,18 +194,23 @@ public class YeOldeMensa extends Activity {
 			builder = new AlertDialog.Builder(this);
 			try {
 
-				String distance = String.valueOf(gsm
-						.getDistance(this.mensa[this.selectedMensa]
-								.getCoordinates()));
+				// Location not working currently, just darkens screen
+				// (Exception, probably).
+				/*
+				 * String distance = String.valueOf(gsm
+				 * .getDistance(this.mensa[this.selectedMensa]
+				 * .getCoordinates()));
+				 */
 
-				builder.setMessage(
-						"Ye Olde Mensa v"
-								+ VERSION
-								+ "\n\nCopyright 2010/2011\nby Daniel Süpke, Frederik Kramer\n\nhttp://suepke.eu/ "
-								+ "\n Die Entfernung\n zur ausgewählten Mensa\n beträgt zur Zeit: "
-								+ distance + "km")
-						.setCancelable(false)
-						.setPositiveButton("Ok",
+				builder
+						.setMessage(
+								"Ye Olde Mensa v"
+										+ VERSION
+										+ "\n\nCopyright 2010/2011\nby Daniel Süpke, Frederik Kramer\n\nFür weitere Mensen und FAQ: http://yeoldemensa.de/ ")
+						// +
+						// "\n Die Entfernung\n zur ausgewählten Mensa\n beträgt zur Zeit: "
+						// + distance + "km")
+						.setCancelable(false).setPositiveButton("Ok",
 								new DialogInterface.OnClickListener() {
 									public void onClick(DialogInterface dialog,
 											int id) {
@@ -218,9 +233,9 @@ public class YeOldeMensa extends Activity {
 	 * messages. TODO: Include in refreshView()? Otherwise always both calls
 	 * necessary. Maybe integrate FakeMenu into it and use a DEBUG constant
 	 */
-	private void refresh() {
+	private void loadMenu(boolean forceRefresh) {
 		try {
-			this.mensa[selectedMensa].refresh();
+			this.mensa[selectedMensa].loadMenu(forceRefresh);
 
 			// Display last actualisation date
 			String date = new SimpleDateFormat("dd.MM.yyyy HH:mm")
@@ -232,13 +247,13 @@ public class YeOldeMensa extends Activity {
 			((TextView) findViewById(R.id.headermensa))
 					.setText(this.mensa[selectedMensa].getName());
 		} catch (Exception e) {
-			Log.d("yom",
-					"Exception while retrieving menu data: " + e.getMessage());
+			Log.d("yom", "Exception while retrieving menu data: "
+					+ e.getMessage());
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setMessage(
-					"Fehler beim Auslesen der Mensa-Webseite!\nWahrscheinlich wurde die Mensa-Webseite geändert (liegt leider ausserhalb unserer Kontrolle, bitte auf Update warten oder Mail an yeoldemensa@suepke.eu).\n\nDetail: "
-							+ e)
-					.setCancelable(false)
+			builder
+					.setMessage(
+							"Fehler beim Auslesen der Mensa-Webseite!\nWahrscheinlich wurde die Mensa-Webseite geändert (liegt leider ausserhalb unserer Kontrolle, bitte auf Update warten oder Mail an yeoldemensa@suepke.eu).\n\nDetail: "
+									+ e).setCancelable(false)
 					.setPositiveButton("Ok",
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,

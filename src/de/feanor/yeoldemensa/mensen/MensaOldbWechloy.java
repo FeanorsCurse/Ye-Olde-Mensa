@@ -23,6 +23,8 @@ package de.feanor.yeoldemensa.mensen;
 import java.io.IOException;
 import java.net.URL;
 
+import android.content.Context;
+
 import de.feanor.htmltokenizer.Element;
 import de.feanor.htmltokenizer.SimpleHTMLTokenizer;
 import de.feanor.yeoldemensa.Mensa;
@@ -34,8 +36,10 @@ import de.feanor.yeoldemensa.MenuItem;
  */
 public class MensaOldbWechloy extends Mensa {
 
-	public static double lat = 53.152147;
-	public static double lng = 8.165046;
+	public MensaOldbWechloy(Context context) {
+		super(context);
+		// TODO Auto-generated constructor stub
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -43,7 +47,7 @@ public class MensaOldbWechloy extends Mensa {
 	 * @see de.feanor.yeoldemensa.Mensa#loadMenu(java.util.Map)
 	 */
 	@Override
-	protected void loadMenu() throws IOException {
+	protected void fetchMenu() throws IOException {
 		SimpleHTMLTokenizer tokenizer = new SimpleHTMLTokenizer(
 				new URL(
 						"http://www.studentenwerk-oldenburg.de/speiseplan/wechloy.php"),
@@ -98,9 +102,11 @@ public class MensaOldbWechloy extends Mensa {
 
 	@Override
 	public double[] getCoordinates() {
-		double[] coordinates = new double[2];
-		coordinates[0] = lat;
-		coordinates[1] = lng;
-		return coordinates;
+		return new double[] { 53.152147, 8.165046 };
+	}
+
+	@Override
+	public int getID() {
+		return 1;
 	}
 }

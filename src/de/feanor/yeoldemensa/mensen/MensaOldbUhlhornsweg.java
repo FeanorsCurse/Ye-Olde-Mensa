@@ -23,7 +23,7 @@ package de.feanor.yeoldemensa.mensen;
 import java.io.IOException;
 import java.net.URL;
 
-import android.util.Log;
+import android.content.Context;
 
 import de.feanor.htmltokenizer.Element;
 import de.feanor.htmltokenizer.SimpleHTMLTokenizer;
@@ -36,11 +36,13 @@ import de.feanor.yeoldemensa.MenuItem;
  */
 public class MensaOldbUhlhornsweg extends Mensa {
 
-	public static double lat = 53.147372;
-	public static double lng = 8.179326;
+	public MensaOldbUhlhornsweg(Context context) {
+		super(context);
+		// TODO Auto-generated constructor stub
+	}
 
-	@Override
-	protected void loadMenu() throws IOException {
+@Override
+	protected void fetchMenu() throws IOException {
 		SimpleHTMLTokenizer tokenizer;
 
 		tokenizer = setupTokenizer("http://www.studentenwerk-oldenburg.de/speiseplan/uhlhornsweg-ausgabe-a.php");
@@ -142,8 +144,6 @@ public class MensaOldbUhlhornsweg extends Mensa {
 				&& !element.content.equals("/td"))
 			;
 
-		Log.d("yom", "Skipped");
-
 		boolean inCell = false;
 		boolean finished = false;
 
@@ -192,9 +192,11 @@ public class MensaOldbUhlhornsweg extends Mensa {
 
 	@Override
 	public double[] getCoordinates() {
-		double[] coordinates = new double[2];
-		coordinates[0] = lat;
-		coordinates[1] = lng;
-		return coordinates;
+		return new double[] { 53.147372, 8.179326 };
+	}
+	
+	@Override
+	public int getID() {
+		return 0;
 	}
 }
