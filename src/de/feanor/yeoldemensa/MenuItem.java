@@ -21,6 +21,11 @@ package de.feanor.yeoldemensa;
 
 import de.feanor.yeoldemensa.Mensa.Day;
 
+/**
+ * Data class for a single menu item.
+ * 
+ * @author Daniel Süpke
+ */
 public class MenuItem {
 	public Day day;
 	public String type;

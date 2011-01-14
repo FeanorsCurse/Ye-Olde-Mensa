@@ -16,13 +16,22 @@ import static de.feanor.htmltokenizer.Element.TEXT;
  * parse(BufferedReader) comment for hack :P.
  * 
  * @author Daniel Süpke
- * 
  */
 public class SimpleHTMLTokenizer {
 	private List<Element> elementList = new ArrayList<Element>();
 
 	private ListIterator<Element> elements;
 
+	/**
+	 * Constructor will parse the given URL.
+	 * 
+	 * @param url
+	 *            URL of html page to parse
+	 * @param encoding
+	 *            I.e. "iso 8859-1" or "utf-8" (hopefully the latter)
+	 * @throws IOException
+	 *             Thrown if there is a problem connecting to the web site
+	 */
 	public SimpleHTMLTokenizer(URL url, String encoding) throws IOException {
 		BufferedReader br = new BufferedReader(new InputStreamReader(
 				url.openStream(), encoding));
@@ -66,7 +75,7 @@ public class SimpleHTMLTokenizer {
 				}
 
 				// Remove attributes
-				for (int i = 0; i < size-1; i++) {
+				for (int i = 0; i < size - 1; i++) {
 					if (buf[i] == ' ')
 						size = i;
 				}

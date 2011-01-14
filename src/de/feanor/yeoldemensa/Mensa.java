@@ -38,8 +38,9 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 /**
- * @author Daniel Süpke
  * 
+ * 
+ * @author Daniel Süpke
  */
 public abstract class Mensa {
 
@@ -68,36 +69,13 @@ public abstract class Mensa {
 	}
 
 	/**
-	 * Adds a menu item to a the food items. Example: addMenuItem("Ausgabe A",
-	 * "Spaghetti Napoli"); Usually used within loadMenu(); Duplicate items will
-	 * not be added.
+	 * Returns the menu for the given day in a Map. The Map keys are the menu
+	 * types, with a List of menu item strings.
 	 * 
-	 * @param type
-	 *            Type of food, will be used as header in the view
-	 * @param menuItem
-	 *            Menu item (food) to add
+	 * @param day
+	 *            Day to get the menu for
+	 * @return Map in form <menu_type, List<menu_item>>
 	 */
-	public void addMenuItem(MenuItem menuItem) {
-		Map<String, List<String>> dayMenu = menu.get(menuItem.day);
-
-		if (dayMenu == null) {
-			dayMenu = new LinkedHashMap<String, List<String>>();
-			menu.put(menuItem.day, dayMenu);
-		}
-
-		List<String> menuList = dayMenu.get(menuItem.type);
-
-		if (menuList == null) {
-			menuList = new ArrayList<String>();
-			dayMenu.put(menuItem.type, menuList);
-		}
-
-		// Avoid double items
-		if (!menuList.contains(menuItem.item)) {
-			menuList.add(menuItem.item);
-		}
-	}
-
 	public Map<String, List<String>> getMenuForDay(Day day) {
 		// Check if data is valid
 		if (validTo.before(new Date())) {
@@ -107,6 +85,15 @@ public abstract class Mensa {
 		return menu.get(day);
 	}
 
+	/**
+	 * Returns the menu items for the given day and menu type.
+	 * 
+	 * @param day
+	 *            Day to get the menu for
+	 * @param type
+	 *            Type to get the menu items for
+	 * @return List of menu items
+	 */
 	public List<String> getMenuforDayType(Day day, String type) {
 		// Check if data is valid
 		if (validTo.before(new Date())) {
@@ -116,6 +103,22 @@ public abstract class Mensa {
 		return menu.get(day).get(type);
 	}
 
+	/**
+	 * (Re-)loads the menu for the Mensa. If the menu has already been fetched
+	 * from the web site and is stored in the internal sqlite database, it is
+	 * fetched from there if still valid. If the entries are outdated or not yet
+	 * in the database, the web site will be parsed and the result stored in the
+	 * database. If a recheck is forced (normally by the user requesting a
+	 * refresh in the android menu), it will be fetched from the website
+	 * regardless of the database state.
+	 * 
+	 * @param forceRefetch
+	 *            Refetch from the web site even if valid data has been found in
+	 *            the database.
+	 * @throws IOException
+	 *             Might be thrown if there are any problems while fetching data
+	 *             from the web site.
+	 */
 	public void loadMenu(boolean forceRefetch) throws IOException {
 		// Set up hashmaps for each week day
 		menu.clear();
@@ -124,12 +127,10 @@ public abstract class Mensa {
 
 		// If we are up to date and don't need to fetch per user requst, just
 		// load from db and be done
-		if (sqlHelper.isMensaUpToDate(this.getID()) && !forceRefetch) {
-			Log.d("yom", "Fetching Mensa " + this.getName() + " from database");
+		if (sqlHelper.isMensaUpToDate() && !forceRefetch) {
 			this.sqlHelper.loadMensa();
 			return;
 		}
-		Log.d("yom", "Fetching Mensa " + this.getName() + " from web site");
 
 		fetchMenu();
 		Calendar cal = Calendar.getInstance();
@@ -170,10 +171,44 @@ public abstract class Mensa {
 	}
 
 	/**
-	 * @return
+	 * Returns the Date of the last time the menu has been refreshed from
+	 * parsing the web site in loadMenu().
+	 * 
+	 * @return Last actualisation date
 	 */
-	public Date lastActualised() {
+	public Date getActualisedOn() {
 		return this.lastActualised;
+	}
+
+	/**
+	 * Adds a menu item to a the food items. Example: addMenuItem("Ausgabe A",
+	 * "Spaghetti Napoli"); Usually used within loadMenu(); Duplicate items will
+	 * not be added.
+	 * 
+	 * @param type
+	 *            Type of food, will be used as header in the view
+	 * @param menuItem
+	 *            Menu item (food) to add
+	 */
+	protected void addMenuItem(MenuItem menuItem) {
+		Map<String, List<String>> dayMenu = menu.get(menuItem.day);
+
+		if (dayMenu == null) {
+			dayMenu = new LinkedHashMap<String, List<String>>();
+			menu.put(menuItem.day, dayMenu);
+		}
+
+		List<String> menuList = dayMenu.get(menuItem.type);
+
+		if (menuList == null) {
+			menuList = new ArrayList<String>();
+			dayMenu.put(menuItem.type, menuList);
+		}
+
+		// Avoid double items
+		if (!menuList.contains(menuItem.item)) {
+			menuList.add(menuItem.item);
+		}
 	}
 
 	/**
@@ -189,18 +224,6 @@ public abstract class Mensa {
 	}
 
 	/**
-	 * Load the menu, usually by parsing a web site. Use addMenuItem(String
-	 * type, String menuItem) to add items.
-	 * 
-	 * Use getNextWeek() to test if the current or next week's plans should be
-	 * fetched.
-	 * 
-	 * @see Mensa.addMenuItem(String type, String menuItem)
-	 * @throws IOException
-	 */
-	protected abstract void fetchMenu() throws IOException;
-
-	/***
 	 * @return coordinates of the Mensa
 	 */
 	public abstract double[] getCoordinates() throws Exception;
@@ -212,10 +235,24 @@ public abstract class Mensa {
 	 */
 	public abstract String getName();
 
-	public Date getActualisedOn() {
-		return this.lastActualised;
-	}
+	/**
+	 * Load the menu, usually by parsing a web site. Use addMenuItem(String
+	 * type, String menuItem) to add items.
+	 * 
+	 * Use getNextWeek() to test if the current or next week's plans should be
+	 * fetched.
+	 * 
+	 * @see Mensa.addMenuItem(String type, String menuItem)
+	 * @throws IOException
+	 */
+	protected abstract void fetchMenu() throws IOException;
 
+	/**
+	 * Returns the unique ID of this Mensa. Used for identifying its data in the
+	 * sqlite database.
+	 * 
+	 * @return Unique ID
+	 */
 	protected abstract int getID();
 
 	/**
@@ -238,12 +275,9 @@ public abstract class Mensa {
 
 		@Override
 		public void onCreate(SQLiteDatabase db) {
-			db
-					.execSQL("CREATE TABLE mensen (id INTEGER PRIMARY KEY, validTo TIMESTAMP, actualised TIMESTAMP);");
-			db
-					.execSQL("CREATE TABLE mtypes (id INTEGER, mensaID INTEGER, name TEXT);");
-			db
-					.execSQL("CREATE TABLE mitems (mtypeID INTEGER, mensaID INTEGER, day INTEGER, name TEXT);");
+			db.execSQL("CREATE TABLE mensen (id INTEGER PRIMARY KEY, validTo TIMESTAMP, actualised TIMESTAMP);");
+			db.execSQL("CREATE TABLE mtypes (id INTEGER, mensaID INTEGER, name TEXT);");
+			db.execSQL("CREATE TABLE mitems (mtypeID INTEGER, mensaID INTEGER, day INTEGER, name TEXT);");
 		}
 
 		@Override
@@ -305,13 +339,13 @@ public abstract class Mensa {
 			cursor = db.rawQuery("SELECT * FROM mitems WHERE mensaID="
 					+ getID(), null);
 			while (cursor.moveToNext()) {
-				addMenuItem(new MenuItem(Day.values()[cursor.getInt(2)], types
-						.get(cursor.getInt(0)), cursor.getString(3)));
+				addMenuItem(new MenuItem(Day.values()[cursor.getInt(2)],
+						types.get(cursor.getInt(0)), cursor.getString(3)));
 			}
 			cursor.close();
 		}
 
-		public boolean isMensaUpToDate(int mensaID) {
+		public boolean isMensaUpToDate() {
 			SQLiteDatabase db = getReadableDatabase();
 			Cursor cursor = db.rawQuery("SELECT * FROM mensen WHERE id="
 					+ getID(), null);

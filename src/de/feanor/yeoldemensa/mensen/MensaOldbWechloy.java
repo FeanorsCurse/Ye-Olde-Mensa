@@ -31,8 +31,9 @@ import de.feanor.yeoldemensa.Mensa;
 import de.feanor.yeoldemensa.MenuItem;
 
 /**
- * @author Daniel Süpke
+ * Contains the parser for the Mensa Oldenburg/Wechloy.
  * 
+ * @author Daniel Süpke
  */
 public class MensaOldbWechloy extends Mensa {
 

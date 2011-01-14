@@ -31,8 +31,10 @@ import de.feanor.yeoldemensa.Mensa;
 import de.feanor.yeoldemensa.MenuItem;
 
 /**
- * @author Daniel Süpke
+ * Contains the parser for the Mensa Oldenburg/Uhlhornsweg. Combines the web
+ * sites for Ausgabe A/B and Culinarium.
  * 
+ * @author Daniel Süpke
  */
 public class MensaOldbUhlhornsweg extends Mensa {
 
@@ -41,7 +43,7 @@ public class MensaOldbUhlhornsweg extends Mensa {
 		// TODO Auto-generated constructor stub
 	}
 
-@Override
+	@Override
 	protected void fetchMenu() throws IOException {
 		SimpleHTMLTokenizer tokenizer;
 
@@ -61,7 +63,8 @@ public class MensaOldbUhlhornsweg extends Mensa {
 		addColumnAusgabeBC("Salat", "Beilagen (0,30)", 45, tokenizer);
 		addColumnAusgabeBC("Dessert", "Beilagen (0,30)", 45, tokenizer);
 
-		// That's not optimal... parse the page a second time to add the Beilagen at the end.
+		// That's not optimal... parse the page a second time to add the
+		// Beilagen at the end.
 		tokenizer = setupTokenizer("http://www.studentenwerk-oldenburg.de/speiseplan/uhlhornsweg-ausgabe-a.php");
 		addColumnAusgabeA("0,30", "Beilagen (0,30)", 30, tokenizer); // Salat
 		addColumnAusgabeA("0,30", "Beilagen (0,30)", 30, tokenizer); // Suppe
@@ -72,7 +75,7 @@ public class MensaOldbUhlhornsweg extends Mensa {
 		addColumnAusgabeBC("0,30", "Beilagen (0,30)", 30, tokenizer); // Salat
 		addColumnAusgabeBC("0,30", "Beilagen (0,30)", 30, tokenizer); // Suppe
 		addColumnAusgabeBC("0,30", "Beilagen (0,30)", 30, tokenizer); // Dessert
-}
+	}
 
 	/**
 	 * Sets up the tokenizer and skips to the next week if indicated
@@ -93,7 +96,9 @@ public class MensaOldbUhlhornsweg extends Mensa {
 	}
 
 	/**
-	 * Parse Ausgabe A. Website structure differs from Ausgabe B and Culinarium :-/
+	 * Parse Ausgabe A. Website structure differs from Ausgabe B and Culinarium
+	 * :-/
+	 * 
 	 * @param delimeter
 	 * @param type
 	 * @param price
@@ -126,7 +131,9 @@ public class MensaOldbUhlhornsweg extends Mensa {
 	}
 
 	/**
-	 * Parse Ausgabe B and Culinarium. Website structure differs from Ausgabe A :-/
+	 * Parse Ausgabe B and Culinarium. Website structure differs from Ausgabe A
+	 * :-/
+	 * 
 	 * @param delimeter
 	 * @param type
 	 * @param price
@@ -175,6 +182,14 @@ public class MensaOldbUhlhornsweg extends Mensa {
 		}
 	}
 
+	/**
+	 * Return true if the number starts with a string. Could probably be done
+	 * more elegant, e.g. using a RegExp.
+	 * 
+	 * @param string
+	 *            String to examine
+	 * @return True, if string starts with a number.
+	 */
 	private boolean startsWithNumber(String string) {
 		for (int i = 0; i < 10; i++) {
 			if (string.startsWith(Integer.toString(i))) {
@@ -194,7 +209,7 @@ public class MensaOldbUhlhornsweg extends Mensa {
 	public double[] getCoordinates() {
 		return new double[] { 53.147372, 8.179326 };
 	}
-	
+
 	@Override
 	public int getID() {
 		return 0;

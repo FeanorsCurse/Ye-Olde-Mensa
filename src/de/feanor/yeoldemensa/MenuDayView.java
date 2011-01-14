@@ -29,15 +29,26 @@ import com.commonsware.cwac.merge.MergeAdapter;
 
 import de.feanor.yeoldemensa.Mensa.Day;
 
+/**
+ * Provides the view for a tab representing one day of a Mensa.
+ * 
+ * @author Daniel Süpke
+ */
 public class MenuDayView extends ListView {
 
-	// TODO: This is really sucky. Really need to fix it. Came from the strange
+	// TODO: This is really sucky. Came from the strange
 	// tab handling in android, but there should be a better way
 	private YeOldeMensa context;
-
 	private MergeAdapter adapter;
+
 	private Day day;
 
+	/**
+	 * 
+	 * @param context
+	 * @param day
+	 *            The day this View is for
+	 */
 	public MenuDayView(YeOldeMensa context, Day day) {
 		super(context);
 

@@ -46,19 +46,21 @@ import de.feanor.yeoldemensa.mensen.MensaStendal;
 import de.feanor.yeoldemensa.mensen.MensaWerninger;
 
 /**
- * @author Daniel Süpke
+ * Main class of the application.
  * 
+ * @author Daniel Süpke
  */
 public class YeOldeMensa extends Activity {
 
 	public static final String VERSION = "0.9";
 	// suepke: Keeps crashing my phone
-	//public SimpleGSMHelper gsm = new SimpleGSMHelper();
+	// public SimpleGSMHelper gsm = new SimpleGSMHelper();
 
 	// ADD YOUR MENSA HERE, THE REST IS DONE THROUGH MAGIC
 	private Mensa[] mensa = { new MensaOldbUhlhornsweg(this),
 			new MensaOldbWechloy(this), new MensaMagdbCampus(this),
-			new MensaMagdbHerren(this), new MensaWerninger(this), new MensaStendal(this) };
+			new MensaMagdbHerren(this), new MensaWerninger(this),
+			new MensaStendal(this) };
 
 	// Use this for testing
 	// private Mensa[] mensa = { new MensaTest() };
@@ -84,8 +86,9 @@ public class YeOldeMensa extends Activity {
 		loadMenu(false);
 
 		// setCurrentCoordinates;
-		//TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-		//gsm.setMobileLocation(tm);
+		// TelephonyManager tm = (TelephonyManager)
+		// getSystemService(Context.TELEPHONY_SERVICE);
+		// gsm.setMobileLocation(tm);
 
 		// Set up tabs
 		TabHost host = (TabHost) findViewById(R.id.tabhost);
@@ -116,8 +119,8 @@ public class YeOldeMensa extends Activity {
 		TextView textView = (TextView) view.findViewById(R.id.tabsText);
 		textView.setText(title);
 
-		return host.newTabSpec(title).setIndicator(view).setContent(
-				new TabHost.TabContentFactory() {
+		return host.newTabSpec(title).setIndicator(view)
+				.setContent(new TabHost.TabContentFactory() {
 
 					public View createTabContent(String tag) {
 						return menuDayView2;
@@ -177,7 +180,8 @@ public class YeOldeMensa extends Activity {
 							}
 
 							// Store selected mensa
-							SharedPreferences settings = getSharedPreferences("yom_prefs", 0);
+							SharedPreferences settings = getSharedPreferences(
+									"yom_prefs", 0);
 							SharedPreferences.Editor editor = settings.edit();
 							editor.putInt("selected mensa", selectedMensa);
 							editor.commit();
@@ -202,15 +206,15 @@ public class YeOldeMensa extends Activity {
 				 * .getCoordinates()));
 				 */
 
-				builder
-						.setMessage(
-								"Ye Olde Mensa v"
-										+ VERSION
-										+ "\n\nCopyright 2010/2011\nby Daniel Süpke, Frederik Kramer\n\nFür weitere Mensen und FAQ: http://yeoldemensa.de/ ")
+				builder.setMessage(
+						"Ye Olde Mensa v"
+								+ VERSION
+								+ "\n\nCopyright 2010/2011\nby Daniel Süpke, Frederik Kramer\n\nFür weitere Mensen und FAQ: http://yeoldemensa.de/ ")
 						// +
 						// "\n Die Entfernung\n zur ausgewählten Mensa\n beträgt zur Zeit: "
 						// + distance + "km")
-						.setCancelable(false).setPositiveButton("Ok",
+						.setCancelable(false)
+						.setPositiveButton("Ok",
 								new DialogInterface.OnClickListener() {
 									public void onClick(DialogInterface dialog,
 											int id) {
@@ -247,13 +251,13 @@ public class YeOldeMensa extends Activity {
 			((TextView) findViewById(R.id.headermensa))
 					.setText(this.mensa[selectedMensa].getName());
 		} catch (Exception e) {
-			Log.d("yom", "Exception while retrieving menu data: "
-					+ e.getMessage());
+			Log.d("yom",
+					"Exception while retrieving menu data: " + e.getMessage());
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder
-					.setMessage(
-							"Fehler beim Auslesen der Mensa-Webseite!\nWahrscheinlich wurde die Mensa-Webseite geändert (liegt leider ausserhalb unserer Kontrolle, bitte auf Update warten oder Mail an yeoldemensa@suepke.eu).\n\nDetail: "
-									+ e).setCancelable(false)
+			builder.setMessage(
+					"Fehler beim Auslesen der Mensa-Webseite!\nWahrscheinlich wurde die Mensa-Webseite geändert (liegt leider ausserhalb unserer Kontrolle, bitte auf Update warten oder Mail an yeoldemensa@suepke.eu).\n\nDetail: "
+							+ e)
+					.setCancelable(false)
 					.setPositiveButton("Ok",
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,
