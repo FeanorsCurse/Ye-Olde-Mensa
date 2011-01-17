@@ -55,7 +55,7 @@ import de.feanor.yeoldemensa.mensen.MensaWerninger;
  */
 public class YeOldeMensa extends Activity {
 
-	public static final String VERSION = "1.0";
+	public static final String VERSION = "1.01";
 	// suepke: Keeps crashing my phone
 	// public SimpleGSMHelper gsm = new SimpleGSMHelper();
 
@@ -118,7 +118,7 @@ public class YeOldeMensa extends Activity {
 		// Display updates
 		String lastVersion = settings.getString("last version", "-1");
 
-		if (!lastVersion.equals("VERSION")) {
+		if (!lastVersion.equals(VERSION)) {
 			new AlertDialog.Builder(this)
 					.setMessage(
 							"Updates in Version 1.0:\n\n"
