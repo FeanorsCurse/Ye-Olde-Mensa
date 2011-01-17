@@ -118,11 +118,12 @@ public class YeOldeMensa extends Activity {
 		// Display updates
 		String lastVersion = settings.getString("last version", "-1");
 
-		if (!lastVersion.equals(VERSION)) {
+		if (!lastVersion.equals("VERSION")) {
 			new AlertDialog.Builder(this)
 					.setMessage(
 							"Updates in Version 1.0:\n\n"
 									+ "- Wochenansicht für Oldenburger Mensen (andere Mensen folgen in Kürze!)\n"
+									+ "- Merkt sich die zuletzt gewählte Mensa\n"
 									+ "- Mensapläne werden zwischengespeichert, dadurch deutlich schneller sobald die Pläne einmal geladen wurden\n"
 									+ "- Diverse Bugfixes (bei weiteren Bugs bitte Mail an info@yeoldemensa.de!)\n"
 									+ "- Homepage und Twitter-Account:\nhttp://twitter.com/yeoldemensa\nhttp://www.yeoldemensa.de")
