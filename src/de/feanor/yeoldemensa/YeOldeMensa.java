@@ -20,6 +20,7 @@
 
 package de.feanor.yeoldemensa;
 
+import java.net.SocketTimeoutException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -38,6 +39,7 @@ import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.TabHost.TabSpec;
+import de.feanor.htmltokenizer.SimpleHTMLTokenizer;
 import de.feanor.yeoldemensa.Mensa.Day;
 import de.feanor.yeoldemensa.mensen.MensaMagdbCampus;
 import de.feanor.yeoldemensa.mensen.MensaMagdbHerren;
@@ -115,7 +117,6 @@ public class YeOldeMensa extends Activity {
 
 		// Display updates
 		String lastVersion = settings.getString("last version", "-1");
-		Log.d("yom", "version: " + lastVersion);
 
 		if (!lastVersion.equals(VERSION)) {
 			new AlertDialog.Builder(this)
@@ -287,6 +288,23 @@ public class YeOldeMensa extends Activity {
 			for (MenuDayView v : menuDayView) {
 				v.refreshView();
 			}
+		} catch (SocketTimeoutException e) {
+			Log.e("yom", "Exception while retrieving menu data: "
+					+ e.getMessage(), e);
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder
+					.setMessage(
+							"Timeout-Fehler: Die Webseite ist offline (oder lädt langsamer als in " + SimpleHTMLTokenizer.TIMEOUT + "s)!\n\nDetail: "
+									+ e).setCancelable(false)
+					.setPositiveButton("Ok",
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int id) {
+									dialog.dismiss();
+								}
+							});
+			builder.create();
+			builder.show();
 		} catch (Exception e) {
 			Log.e("yom", "Exception while retrieving menu data: "
 					+ e.getMessage(), e);

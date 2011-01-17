@@ -19,6 +19,8 @@ import java.util.ListIterator;
  * @author Daniel Süpke
  */
 public class SimpleHTMLTokenizer {
+	public static final int TIMEOUT = 15;
+	
 	private List<Element> elementList = new ArrayList<Element>();
 
 	private ListIterator<Element> elements;
@@ -35,8 +37,8 @@ public class SimpleHTMLTokenizer {
 	 */
 	public SimpleHTMLTokenizer(URL url, String encoding) throws IOException {
 		URLConnection conn = url.openConnection();
-		conn.setConnectTimeout(10000);
-		conn.setReadTimeout(10000);
+		conn.setConnectTimeout(TIMEOUT * 1000);
+		conn.setReadTimeout(TIMEOUT * 1000);
 
 		BufferedReader br = new BufferedReader(new InputStreamReader(
 				conn.getInputStream(), encoding));
