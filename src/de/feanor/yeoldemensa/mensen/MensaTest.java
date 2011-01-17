@@ -23,8 +23,6 @@ import java.io.IOException;
 import java.util.Random;
 
 import android.content.Context;
-import android.util.Log;
-
 import de.feanor.yeoldemensa.Mensa;
 import de.feanor.yeoldemensa.MenuItem;
 
@@ -43,8 +41,6 @@ public class MensaTest extends Mensa {
 
 	@Override
 	protected void fetchMenu() throws IOException {
-		Log.d("yom", "loading menu");
-
 		for (Day day : Day.values()) {
 			addMenuItem(new MenuItem(day, "Alternativ/Pasta",
 					"Alternativessen Blubb (1,40)"));

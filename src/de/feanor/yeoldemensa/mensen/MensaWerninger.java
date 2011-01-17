@@ -22,9 +22,9 @@ package de.feanor.yeoldemensa.mensen;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Calendar;
 
 import android.content.Context;
-
 import de.feanor.htmltokenizer.Element;
 import de.feanor.htmltokenizer.SimpleHTMLTokenizer;
 import de.feanor.yeoldemensa.Mensa;
@@ -52,7 +52,11 @@ public class MensaWerninger extends Mensa {
 	 */
 	@Override
 	protected void fetchMenu() throws IOException {
-		Day day = Day.MONDAY;
+		// TODO: Currently only supports day plans, not week
+		int dow = Calendar.getInstance().get(Calendar.DAY_OF_WEEK); 
+		Day day = Day.values()[dow-2];
+		if (dow == Calendar.SATURDAY || dow == Calendar.SUNDAY)
+			day = Day.MONDAY;
 
 		SimpleHTMLTokenizer tokenizer = new SimpleHTMLTokenizer(
 				new URL(
@@ -103,7 +107,7 @@ public class MensaWerninger extends Mensa {
 
 	@Override
 	public String getName() {
-		return "Mensa Werningerode";
+		return "Werningerode";
 	}
 
 	@Override

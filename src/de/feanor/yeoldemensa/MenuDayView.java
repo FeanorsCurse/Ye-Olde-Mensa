@@ -54,8 +54,6 @@ public class MenuDayView extends ListView {
 
 		this.context = context;
 		this.day = day;
-
-		refreshView();
 	}
 
 	/**
@@ -68,13 +66,18 @@ public class MenuDayView extends ListView {
 		ArrayAdapter<String> a;
 
 		adapter = new MergeAdapter();
-
+		
 		// If there is no menu data, display message to user and set up empty
 		// dummy adapter to avoid error
 		if (context.getCurrentMensa().isEmpty(day)) {
 			List<String> list = new ArrayList<String>();
-
-			list.add("Kein Menü gefunden. Mensa geschlossen?");
+			String name = context.getCurrentMensa().getName();
+			if (name.startsWith("Magdeburg") || name.startsWith("Werningerode")
+					|| name.startsWith("Stendal"))
+				list
+						.add("Diese Mensa unterstützt bislang leider noch keine Wochenpläne und benötigt manuelles \"aktualisieren\" im Menü. Wir arbeiten dran und aktualisieren die App sobald wie möglich! (Die Webseiten sind leider deutlich komplizierter aufgebaut als die von Oldenburg)");
+			else
+				list.add("Kein Menü gefunden. Mensa geschlossen?");
 			a = new ArrayAdapter<String>(context, R.layout.list_header, list);
 			adapter.addAdapter(a);
 		}

@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.net.URL;
 
 import android.content.Context;
-
 import de.feanor.htmltokenizer.Element;
 import de.feanor.htmltokenizer.SimpleHTMLTokenizer;
 import de.feanor.yeoldemensa.Mensa;
@@ -82,23 +81,58 @@ public class MensaOldbWechloy extends Mensa {
 				&& !element.content.equals("/td"))
 			;
 
+		boolean inCell = false;
+		boolean finished = false;
+
 		// Start adding items for each week day
 		for (int i = 0; i < 5; i++) {
+			finished = false;
+			inCell = false;
+
+			// Next element needs to be ignored to remove leading td
 			element = tokenizer.nextElement();
 
-			while (element.isText() || !element.content.equals("/td")) {
-				if (element.isText()) {
+			while (!finished) {
+				element = tokenizer.nextElement();
+
+				if (element.isText() && !startsWithNumber(element.content)) {
 					this.addMenuItem(new MenuItem(Day.values()[i], type,
 							element.content, price));
+				} else {
+					// If a td is encountered, we are in an inner Cell. Do not
+					// stop at next /td
+					if (element.content.startsWith("td"))
+						inCell = true;
+					else if (element.content.equals("/td") && inCell)
+						inCell = false;
+					else if (element.content.equals("/td") && !inCell)
+						finished = true;
 				}
-				element = tokenizer.nextElement();
 			}
 		}
 	}
 
+	/**
+	 * Return true if the number starts with a string. Could probably be done
+	 * more elegant, e.g. using a RegExp.
+	 * 
+	 * @param string
+	 *            String to examine
+	 * @return True, if string starts with a number.
+	 */
+	private boolean startsWithNumber(String string) {
+		for (int i = 0; i < 10; i++) {
+			if (string.startsWith(Integer.toString(i))) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	@Override
 	public String getName() {
-		return "Mensa Wechloy";
+		return "Oldenburg - Wechloy";
 	}
 
 	@Override

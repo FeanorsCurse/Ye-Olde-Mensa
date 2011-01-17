@@ -35,7 +35,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
 
 /**
  * 
@@ -100,6 +99,9 @@ public abstract class Mensa {
 			throw new RuntimeException("Warning: Used outdated Mensa data!");
 		}
 
+		// if (menu.get(day).get(type) == null)
+		// return Arrays.asList(new String[] { type + " nicht gefunden" });
+
 		return menu.get(day).get(type);
 	}
 
@@ -160,14 +162,20 @@ public abstract class Mensa {
 	}
 
 	/**
-	 * Return true if there is no menu data for the given day.
+	 * Return true if there are no menu items for the given day. Note: Will
+	 * still return true, if there are menu types.
 	 * 
 	 * @param day
 	 *            Day to check
 	 * @return True if no menu
 	 */
 	public boolean isEmpty(Day day) {
-		return menu.get(day).isEmpty();
+		for (String type : menu.get(day).keySet()) {
+			if (!menu.get(day).get(type).isEmpty())
+				return false;
+		}
+
+		return true;
 	}
 
 	/**
@@ -275,9 +283,12 @@ public abstract class Mensa {
 
 		@Override
 		public void onCreate(SQLiteDatabase db) {
-			db.execSQL("CREATE TABLE mensen (id INTEGER PRIMARY KEY, validTo TIMESTAMP, actualised TIMESTAMP);");
-			db.execSQL("CREATE TABLE mtypes (id INTEGER, mensaID INTEGER, name TEXT);");
-			db.execSQL("CREATE TABLE mitems (mtypeID INTEGER, mensaID INTEGER, day INTEGER, name TEXT);");
+			db
+					.execSQL("CREATE TABLE mensen (id INTEGER PRIMARY KEY, validTo TIMESTAMP, actualised TIMESTAMP);");
+			db
+					.execSQL("CREATE TABLE mtypes (id INTEGER, mensaID INTEGER, name TEXT);");
+			db
+					.execSQL("CREATE TABLE mitems (mtypeID INTEGER, mensaID INTEGER, day INTEGER, name TEXT);");
 		}
 
 		@Override
@@ -295,19 +306,22 @@ public abstract class Mensa {
 			db.execSQL("INSERT OR REPLACE INTO mensen VALUES (" + getID() + ","
 					+ validTo.getTime() + "," + lastActualised.getTime() + ")");
 			db.execSQL("DELETE FROM mtypes WHERE mensaID=" + getID());
+			db.execSQL("DELETE FROM mitems WHERE mensaID=" + getID());
 
 			for (String type : getMenuForDay(Day.MONDAY).keySet()) {
 				db.execSQL("INSERT INTO mtypes VALUES (" + i + ", " + getID()
 						+ ", \"" + type + "\")");
 
 				for (Day day : Day.values()) {
-					for (String item : getMenuforDayType(day, type)) {
-						ContentValues values = new ContentValues();
-						values.put("mtypeID", i);
-						values.put("mensaID", getID());
-						values.put("day", day.ordinal());
-						values.put("name", item);
-						db.insert("mitems", null, values);
+					if (getMenuforDayType(day, type) != null) {
+						for (String item : getMenuforDayType(day, type)) {
+							ContentValues values = new ContentValues();
+							values.put("mtypeID", i);
+							values.put("mensaID", getID());
+							values.put("day", day.ordinal());
+							values.put("name", item);
+							db.insert("mitems", null, values);
+						}
 					}
 				}
 
@@ -332,15 +346,14 @@ public abstract class Mensa {
 
 			while (cursor.moveToNext()) {
 				types.put(cursor.getInt(0), cursor.getString(1));
-				Log.d("yom", "mtype: " + cursor.getString(1));
 			}
 			cursor.close();
 
 			cursor = db.rawQuery("SELECT * FROM mitems WHERE mensaID="
 					+ getID(), null);
 			while (cursor.moveToNext()) {
-				addMenuItem(new MenuItem(Day.values()[cursor.getInt(2)],
-						types.get(cursor.getInt(0)), cursor.getString(3)));
+				addMenuItem(new MenuItem(Day.values()[cursor.getInt(2)], types
+						.get(cursor.getInt(0)), cursor.getString(3)));
 			}
 			cursor.close();
 		}

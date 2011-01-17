@@ -1,15 +1,16 @@
 package de.feanor.htmltokenizer;
 
-import java.io.BufferedReader;
+import static de.feanor.htmltokenizer.Element.TAG;
+import static de.feanor.htmltokenizer.Element.TEXT;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
-import static de.feanor.htmltokenizer.Element.TAG;
-import static de.feanor.htmltokenizer.Element.TEXT;
 
 /**
  * Quick'n'dirty implementation of a HTML elementizer (/parser). See
@@ -33,8 +34,12 @@ public class SimpleHTMLTokenizer {
 	 *             Thrown if there is a problem connecting to the web site
 	 */
 	public SimpleHTMLTokenizer(URL url, String encoding) throws IOException {
+		URLConnection conn = url.openConnection();
+		conn.setConnectTimeout(10000);
+		conn.setReadTimeout(10000);
+
 		BufferedReader br = new BufferedReader(new InputStreamReader(
-				url.openStream(), encoding));
+				conn.getInputStream(), encoding));
 		parse(br);
 		elements = elementList.listIterator();
 	}
@@ -46,7 +51,7 @@ public class SimpleHTMLTokenizer {
 	// hack.
 	private void parse(BufferedReader br) throws IOException {
 		char c;
-		char[] buf = new char[50000];
+		char[] buf = new char[50001];
 		int size = 0;
 		int j = 0;
 		boolean finished = false;
@@ -56,8 +61,7 @@ public class SimpleHTMLTokenizer {
 
 		do {
 			size = 0;
-			if (j++ == 300000)
-				break;
+			if (j++ == 50000) throw new RuntimeException("Error in html parser");
 
 			// Tag
 			if (c == '<') {

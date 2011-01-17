@@ -202,7 +202,7 @@ public class MensaOldbUhlhornsweg extends Mensa {
 
 	@Override
 	public String getName() {
-		return "Mensa Uhlhornsweg";
+		return "Oldenburg - Uhlhornsweg";
 	}
 
 	@Override

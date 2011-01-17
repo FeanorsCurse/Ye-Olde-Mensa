@@ -36,6 +36,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TabHost;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.TabHost.TabSpec;
 import de.feanor.yeoldemensa.Mensa.Day;
 import de.feanor.yeoldemensa.mensen.MensaMagdbCampus;
@@ -52,7 +53,7 @@ import de.feanor.yeoldemensa.mensen.MensaWerninger;
  */
 public class YeOldeMensa extends Activity {
 
-	public static final String VERSION = "0.9";
+	public static final String VERSION = "1.0";
 	// suepke: Keeps crashing my phone
 	// public SimpleGSMHelper gsm = new SimpleGSMHelper();
 
@@ -82,9 +83,6 @@ public class YeOldeMensa extends Activity {
 		SharedPreferences settings = getSharedPreferences("yom_prefs", 0);
 		selectedMensa = settings.getInt("selected mensa", 0);
 
-		// Load current Mensa
-		loadMenu(false);
-
 		// setCurrentCoordinates;
 		// TelephonyManager tm = (TelephonyManager)
 		// getSystemService(Context.TELEPHONY_SERVICE);
@@ -111,6 +109,35 @@ public class YeOldeMensa extends Activity {
 			host.setCurrentTab(currentDay - 2);
 		else
 			host.setCurrentTab(Calendar.MONDAY - 2);
+
+		// Load current Mensa
+		loadMenu(false);
+
+		// Display updates
+		String lastVersion = settings.getString("last version", "-1");
+		Log.d("yom", "version: " + lastVersion);
+
+		if (!lastVersion.equals(VERSION)) {
+			new AlertDialog.Builder(this)
+					.setMessage(
+							"Updates in Version 1.0:\n\n"
+									+ "- Wochenansicht für Oldenburger Mensen (andere Mensen folgen in Kürze!)\n"
+									+ "- Mensapläne werden zwischengespeichert, dadurch deutlich schneller sobald die Pläne einmal geladen wurden\n"
+									+ "- Diverse Bugfixes (bei weiteren Bugs bitte Mail an info@yeoldemensa.de!)\n"
+									+ "- Homepage und Twitter-Account:\nhttp://twitter.com/yeoldemensa\nhttp://www.yeoldemensa.de")
+					.setCancelable(false).setPositiveButton("Ok",
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int id) {
+									dialog.dismiss();
+								}
+							}).create().show();
+
+			SharedPreferences.Editor editor = settings.edit();
+			editor.putString("last version", VERSION);
+			editor.commit();
+		}
+
 	}
 
 	private TabSpec createTab(TabHost host, String title,
@@ -119,8 +146,8 @@ public class YeOldeMensa extends Activity {
 		TextView textView = (TextView) view.findViewById(R.id.tabsText);
 		textView.setText(title);
 
-		return host.newTabSpec(title).setIndicator(view)
-				.setContent(new TabHost.TabContentFactory() {
+		return host.newTabSpec(title).setIndicator(view).setContent(
+				new TabHost.TabContentFactory() {
 
 					public View createTabContent(String tag) {
 						return menuDayView2;
@@ -151,7 +178,6 @@ public class YeOldeMensa extends Activity {
 		switch (item.getItemId()) {
 		case R.id.refresh:
 			loadMenu(true);
-			// refreshView();
 			return true;
 
 		case R.id.settings:
@@ -175,18 +201,24 @@ public class YeOldeMensa extends Activity {
 						public void onClick(DialogInterface dialog, int id) {
 							loadMenu(false);
 
-							for (int i = 0; i < 5; i++) {
-								menuDayView[i].refreshView();
-							}
-
 							// Store selected mensa
 							SharedPreferences settings = getSharedPreferences(
 									"yom_prefs", 0);
 							SharedPreferences.Editor editor = settings.edit();
 							editor.putInt("selected mensa", selectedMensa);
 							editor.commit();
-
 							dialog.dismiss();
+
+							// Todo: Mgdb
+							String name = mensa[selectedMensa].getName();
+							if (name.startsWith("Magdeburg")
+									|| name.startsWith("Werningerode")
+									|| name.startsWith("Stendal"))
+								Toast
+										.makeText(
+												YeOldeMensa.this,
+												"Diese Mensa unterstützt bislang leider noch keine Wochenpläne und benötigt manuelles \"aktualisieren\" im Menü.\n\nWir arbeiten dran!",
+												Toast.LENGTH_LONG).show();
 						}
 					});
 
@@ -206,15 +238,15 @@ public class YeOldeMensa extends Activity {
 				 * .getCoordinates()));
 				 */
 
-				builder.setMessage(
-						"Ye Olde Mensa v"
-								+ VERSION
-								+ "\n\nCopyright 2010/2011\nby Daniel Süpke, Frederik Kramer\n\nFür weitere Mensen und FAQ: http://yeoldemensa.de/ ")
+				builder
+						.setMessage(
+								"Ye Olde Mensa v"
+										+ VERSION
+										+ "\n\nCopyright 2010/2011\nby Daniel Süpke\nContributions by Frederik Kramer\n\nDeine Mensa fehlt oder du hast einen Bug gefunden? Maile an info@yeoldemensa.de\n\nFolge uns auf Twitter:\nhttp://twitter.com/yeoldemensa\n\nHomepage und FAQ:\nhttp://www.yeoldemensa.de/ ")
 						// +
 						// "\n Die Entfernung\n zur ausgewählten Mensa\n beträgt zur Zeit: "
 						// + distance + "km")
-						.setCancelable(false)
-						.setPositiveButton("Ok",
+						.setCancelable(false).setPositiveButton("Ok",
 								new DialogInterface.OnClickListener() {
 									public void onClick(DialogInterface dialog,
 											int id) {
@@ -250,14 +282,19 @@ public class YeOldeMensa extends Activity {
 			// Display current Mensa name
 			((TextView) findViewById(R.id.headermensa))
 					.setText(this.mensa[selectedMensa].getName());
+
+			// refresh View
+			for (MenuDayView v : menuDayView) {
+				v.refreshView();
+			}
 		} catch (Exception e) {
-			Log.d("yom",
-					"Exception while retrieving menu data: " + e.getMessage());
+			Log.e("yom", "Exception while retrieving menu data: "
+					+ e.getMessage(), e);
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setMessage(
-					"Fehler beim Auslesen der Mensa-Webseite!\nWahrscheinlich wurde die Mensa-Webseite geändert (liegt leider ausserhalb unserer Kontrolle, bitte auf Update warten oder Mail an yeoldemensa@suepke.eu).\n\nDetail: "
-							+ e)
-					.setCancelable(false)
+			builder
+					.setMessage(
+							"Fehler beim Auslesen der Mensa-Webseite!\nWahrscheinlich wurde die Mensa-Webseite geändert (liegt leider ausserhalb unserer Kontrolle, bitte auf Update warten oder Mail an yeoldemensa@suepke.eu).\n\nDetail: "
+									+ e).setCancelable(false)
 					.setPositiveButton("Ok",
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,
