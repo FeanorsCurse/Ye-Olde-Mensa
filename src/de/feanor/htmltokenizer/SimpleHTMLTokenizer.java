@@ -1,49 +1,90 @@
 package de.feanor.htmltokenizer;
 
-import static de.feanor.htmltokenizer.Element.TAG;
-import static de.feanor.htmltokenizer.Element.TEXT;
-
 import java.io.BufferedReader;
+
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+import static de.feanor.htmltokenizer.Element.TAG;
+import static de.feanor.htmltokenizer.Element.TEXT;
 
 /**
  * Quick'n'dirty implementation of a HTML elementizer (/parser). See
  * parse(BufferedReader) comment for hack :P.
  * 
  * @author Daniel Süpke
+ * 
  */
 public class SimpleHTMLTokenizer {
-	public static final int TIMEOUT = 15;
-	
 	private List<Element> elementList = new ArrayList<Element>();
-
+	public static final int TIMEOUT = 15;
 	private ListIterator<Element> elements;
 
-	/**
-	 * Constructor will parse the given URL.
-	 * 
-	 * @param url
-	 *            URL of html page to parse
-	 * @param encoding
-	 *            I.e. "iso 8859-1" or "utf-8" (hopefully the latter)
-	 * @throws IOException
-	 *             Thrown if there is a problem connecting to the web site
-	 */
 	public SimpleHTMLTokenizer(URL url, String encoding) throws IOException {
-		URLConnection conn = url.openConnection();
-		conn.setConnectTimeout(TIMEOUT * 1000);
-		conn.setReadTimeout(TIMEOUT * 1000);
-
 		BufferedReader br = new BufferedReader(new InputStreamReader(
-				conn.getInputStream(), encoding));
+				url.openStream(), encoding));
 		parse(br);
 		elements = elementList.listIterator();
+	}
+	
+	public SimpleHTMLTokenizer(String urlString, String encoding, String date) throws IOException {
+		
+		     URL url = new URL(urlString);
+		     URLConnection conn = url.openConnection();
+		     HttpURLConnection httpConn = (HttpURLConnection)conn;
+		     
+		     httpConn.setRequestMethod("GET");
+		     httpConn.setDoOutput(true); 
+		     httpConn.setDoInput(true);
+		     httpConn.connect(); 
+		     
+		     BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+		     String line, name, value;
+		     String dataset = URLEncoder.encode("ctl00%24ctl00%24_PlaceHolderLeftNavBarTop%24SearchBox%24S5F437507_InputKeywords", "UTF-8")+"=";
+		     dataset += "&" + URLEncoder.encode("__EVENTTARGET", "UTF-8") + "=" + URLEncoder.encode("ctl00$ctl00$_PlaceHolderCalendarNavigator$PlaceHolderCalendarNavigator$MensaKalender", "UTF-8");
+		     dataset += "&" + URLEncoder.encode("__EVENTARGUMENT", "UTF-8") + "=" + URLEncoder.encode(date, "UTF-8");
+		     while ((line = br.readLine()) != null) {
+		         if(line.matches("^<input.*")){
+		        	 name = line.split(" ")[2].split("=")[1]; 
+		        	 name = name.substring(1, name.length()-1);
+		        	 value = line.split(" ")[4].split("=")[1];
+		        	 
+		        	 if(line.split(" ")[4].split("=").length > 2){
+		        		 //System.out.println(""+line.split(" ")[4].split("=")[2]);
+		        		 value += "="+line.split(" ")[4].split("=")[2];
+		        	 }
+		        	 value = value.substring(1, value.length()-1);
+		        	 //System.out.println(name +": "+ value);
+		        	 dataset += "&" + URLEncoder.encode(name, "UTF-8") + "=" + URLEncoder.encode(value, "UTF-8");
+		        	    	 
+		         }
+		     }
+		     br.close();
+		  
+		     //System.out.println(dataset);
+		     
+		  	 url = new URL(urlString); 
+		     conn = url.openConnection();
+		     
+		     conn.setDoOutput(true);
+		     OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
+		     wr.write(dataset);
+		     wr.flush();
+
+		     // Get the response
+		     br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+		     parse(br);
+		     wr.close();
+		     br.close();
+		 
+		     elements = elementList.listIterator();
 	}
 
 	// TODO: This parser is quite bad. After each tag it always assumes a text,
@@ -53,7 +94,7 @@ public class SimpleHTMLTokenizer {
 	// hack.
 	private void parse(BufferedReader br) throws IOException {
 		char c;
-		char[] buf = new char[50001];
+		char[] buf = new char[50000];
 		int size = 0;
 		int j = 0;
 		boolean finished = false;
@@ -63,7 +104,8 @@ public class SimpleHTMLTokenizer {
 
 		do {
 			size = 0;
-			if (j++ == 50000) throw new RuntimeException("Error in html parser");
+			if (j++ == 300000)
+				break;
 
 			// Tag
 			if (c == '<') {
@@ -81,7 +123,7 @@ public class SimpleHTMLTokenizer {
 				}
 
 				// Remove attributes
-				for (int i = 0; i < size - 1; i++) {
+				for (int i = 0; i < size-1; i++) {
 					if (buf[i] == ' ')
 						size = i;
 				}
