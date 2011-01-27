@@ -21,11 +21,9 @@
 package de.feanor.yeoldemensa.mensen;
 
 import java.io.IOException;
-import java.net.URL;
 
 import android.content.Context;
 import android.util.Log;
-
 import de.compserve.helper.SimpleDateHelper;
 import de.feanor.htmltokenizer.Element;
 import de.feanor.htmltokenizer.SimpleHTMLTokenizer;

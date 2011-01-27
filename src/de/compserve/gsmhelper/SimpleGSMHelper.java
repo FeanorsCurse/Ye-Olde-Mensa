@@ -30,20 +30,14 @@ import android.telephony.gsm.GsmCellLocation;
 import android.util.Log;
 
 /**
- * 
- * @author Frederik Kramer
- * 
- */
-
-/**
- * 
  * @comment SimpleGSMHelper class comprises functionality that supports
  *          localisation of a mobile device based on GSM data. It is used for a
  *          coarse localisation of the mobile phone based on the OpenCellID
  *          geolocalisation database.
  * 
+ * @author Frederik Kramer
+ * 
  */
-
 public class SimpleGSMHelper {
 
 	private int lac, cellID, mnc, mcc = 0;
@@ -133,7 +127,6 @@ public class SimpleGSMHelper {
 		} catch (Exception e) {
 			return null;
 		}
-
 	}
 
 	public double getDistance(double[] targetCoordinates) {
@@ -167,7 +160,6 @@ public class SimpleGSMHelper {
 		// Rounding and outputting the result
 		dist = Math.floor(dist);
 		return dist;
-
 	}
 
 	public void setMobileLocation(TelephonyManager manager) {
