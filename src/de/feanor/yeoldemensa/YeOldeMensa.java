@@ -41,12 +41,6 @@ import android.widget.Toast;
 import android.widget.TabHost.TabSpec;
 import de.feanor.htmltokenizer.SimpleHTMLTokenizer;
 import de.feanor.yeoldemensa.Mensa.Day;
-import de.feanor.yeoldemensa.mensen.MensaMagdbHerren;
-import de.feanor.yeoldemensa.mensen.MensaOldbUhlhornsweg;
-import de.feanor.yeoldemensa.mensen.MensaMagdbCampus;
-import de.feanor.yeoldemensa.mensen.MensaOldbWechloy;
-import de.feanor.yeoldemensa.mensen.MensaStendal;
-import de.feanor.yeoldemensa.mensen.MensaWerninger;
 
 /**
  * Main class of the application.
@@ -55,21 +49,15 @@ import de.feanor.yeoldemensa.mensen.MensaWerninger;
  */
 public class YeOldeMensa extends Activity {
 
-	public static final String VERSION = "1.01";
+	public static final String VERSION = "1.1";
 	// suepke: Keeps crashing my phone
 	// public SimpleGSMHelper gsm = new SimpleGSMHelper();
 
 	// ADD YOUR MENSA HERE, THE REST IS DONE THROUGH MAGIC
-	private Mensa[] mensa = { new MensaOldbUhlhornsweg(this),
-			new MensaOldbWechloy(this), new MensaMagdbCampus(this),
-			new MensaMagdbHerren(this), new MensaWerninger(this),
-			new MensaStendal(this) };
+	private Mensa mensa;
 
 	// Use this for testing
 	// private Mensa[] mensa = { new MensaTest() };
-
-	// currently selected mensa index
-	private int selectedMensa;
 
 	// One for each day of the week
 	private MenuDayView[] menuDayView = new MenuDayView[5];
@@ -80,10 +68,6 @@ public class YeOldeMensa extends Activity {
 
 		Log.d("yom", "### Starting application ###");
 		setContentView(R.layout.main);
-
-		// Retrieve selected mensa
-		SharedPreferences settings = getSharedPreferences("yom_prefs", 0);
-		selectedMensa = settings.getInt("selected mensa", 0);
 
 		// setCurrentCoordinates;
 		// TelephonyManager tm = (TelephonyManager)
@@ -112,8 +96,9 @@ public class YeOldeMensa extends Activity {
 		else
 			host.setCurrentTab(Calendar.MONDAY - 2);
 
-		// Load current Mensa
-		loadMenu(false);
+		// Retrieve and load selected mensa
+		SharedPreferences settings = getSharedPreferences("yom_prefs", 0);
+		loadMensa(settings.getInt("selected mensa", 0), false);
 
 		// Display updates
 		String lastVersion = settings.getString("last version", "-1");
@@ -161,7 +146,7 @@ public class YeOldeMensa extends Activity {
 	 * @return
 	 */
 	public Mensa getCurrentMensa() {
-		return mensa[selectedMensa];
+		return mensa;
 	}
 
 	@Override
@@ -179,40 +164,29 @@ public class YeOldeMensa extends Activity {
 
 		switch (item.getItemId()) {
 		case R.id.refresh:
-			loadMenu(true);
+			loadMensa(mensa.getID(), true);
 			return true;
 
 		case R.id.settings:
-			String[] mensaNames = new String[mensa.length];
-
-			for (int i = 0; i < mensa.length; i++) {
-				mensaNames[i] = mensa[i].getName();
-			}
+			String[] mensaNames = (String[]) MensaFactory.getMensaList(this).values().toArray();
 
 			builder = new AlertDialog.Builder(this);
 			builder.setTitle("Einstellungen");
 			builder.setSingleChoiceItems(mensaNames, -1,
 					new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int item) {
-							selectedMensa = item;
-						}
-					});
-			builder.setCancelable(false);
-			builder.setPositiveButton("Ok",
-					new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int id) {
-							loadMenu(false);
+						public void onClick(DialogInterface dialog, int selectedMensaID) {
+							loadMensa(selectedMensaID, false);
 
 							// Store selected mensa
 							SharedPreferences settings = getSharedPreferences(
 									"yom_prefs", 0);
 							SharedPreferences.Editor editor = settings.edit();
-							editor.putInt("selected mensa", selectedMensa);
+							editor.putInt("selected mensa", selectedMensaID);
 							editor.commit();
 							dialog.dismiss();
 
 							// Todo: Mgdb
-							String name = mensa[selectedMensa].getName();
+							String name = mensa.getName();
 							if (name.startsWith("Magdeburg")
 									|| name.startsWith("Werningerode")
 									|| name.startsWith("Stendal"))
@@ -223,9 +197,9 @@ public class YeOldeMensa extends Activity {
 												Toast.LENGTH_LONG).show();
 						}
 					});
-
-			AlertDialog alert = builder.create();
-			alert.show();
+			builder.setCancelable(true);
+					
+			builder.create().show();
 			return true;
 
 		case R.id.about:
@@ -271,9 +245,9 @@ public class YeOldeMensa extends Activity {
 	 * messages. TODO: Include in refreshView()? Otherwise always both calls
 	 * necessary. Maybe integrate FakeMenu into it and use a DEBUG constant
 	 */
-	private void loadMenu(boolean forceRefresh) {
+	private void loadMensa(int mensaID, boolean forceRefetch) {
 		try {
-			this.mensa[selectedMensa].loadMenu(forceRefresh);
+			this.mensa = MensaFactory.getMensa(mensaID, this, forceRefetch);
 
 			// Display last actualisation date
 			String date = new SimpleDateFormat("dd.MM.yyyy HH:mm")
@@ -283,7 +257,7 @@ public class YeOldeMensa extends Activity {
 
 			// Display current Mensa name
 			((TextView) findViewById(R.id.headermensa))
-					.setText(this.mensa[selectedMensa].getName());
+					.setText(this.mensa.getName());
 
 			// refresh View
 			for (MenuDayView v : menuDayView) {
