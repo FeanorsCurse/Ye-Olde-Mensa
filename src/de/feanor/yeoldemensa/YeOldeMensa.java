@@ -20,10 +20,13 @@
 
 package de.feanor.yeoldemensa;
 
+import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+
+import org.json.JSONException;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -39,7 +42,6 @@ import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.TabHost.TabSpec;
-import de.feanor.htmltokenizer.SimpleHTMLTokenizer;
 import de.feanor.yeoldemensa.Mensa.Day;
 
 /**
@@ -66,7 +68,7 @@ public class YeOldeMensa extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		Log.d("yom", "### Starting application ###");
+		Log.i("yom", "### Starting application ###");
 		setContentView(R.layout.main);
 
 		// setCurrentCoordinates;
@@ -98,7 +100,8 @@ public class YeOldeMensa extends Activity {
 
 		// Retrieve and load selected mensa
 		SharedPreferences settings = getSharedPreferences("yom_prefs", 0);
-		loadMensa(settings.getInt("selected mensa", 0), false);
+		// TODO: set default to 0 and see the app crash...
+		loadMensa(settings.getInt("selected mensa", 1), false);
 
 		// Display updates
 		String lastVersion = settings.getString("last version", "-1");
@@ -127,6 +130,12 @@ public class YeOldeMensa extends Activity {
 
 	}
 
+	/**
+	 * @param host
+	 * @param title
+	 * @param menuDayView2
+	 * @return
+	 */
 	private TabSpec createTab(TabHost host, String title,
 			final MenuDayView menuDayView2) {
 		View view = getLayoutInflater().inflate(R.layout.tabs_bg, null);
@@ -168,13 +177,28 @@ public class YeOldeMensa extends Activity {
 			return true;
 
 		case R.id.settings:
-			String[] mensaNames = (String[]) MensaFactory.getMensaList(this).values().toArray();
+			String[] mensaNames = null;
+			try {
+				// TODO: Don't depend on order
+				mensaNames = MensaFactory.getMensaList(this)
+						.values().toArray(new String [0]);
+			} catch (JSONException e) {
+				displayException(e, "Fehler im Datenformat auf yeoldemensa.de. Das sollte nicht passieren! Wir arbeiten wahrscheinlich schon dran...");
+				return true;
+			} catch (IOException e) {
+				displayException(e, "Fehler beim Aufrufen der Daten von yeoldemensa.de. Seite offline?");
+				return true;
+			}
 
 			builder = new AlertDialog.Builder(this);
 			builder.setTitle("Einstellungen");
 			builder.setSingleChoiceItems(mensaNames, -1,
 					new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int selectedMensaID) {
+						public void onClick(DialogInterface dialog,
+								int selectedMensaID) {
+							// TODO: Don't depend on order (+1)
+							selectedMensaID++;
+							
 							loadMensa(selectedMensaID, false);
 
 							// Store selected mensa
@@ -198,7 +222,7 @@ public class YeOldeMensa extends Activity {
 						}
 					});
 			builder.setCancelable(true);
-					
+
 			builder.create().show();
 			return true;
 
@@ -231,7 +255,7 @@ public class YeOldeMensa extends Activity {
 								});
 				builder.create();
 			} catch (Exception e) {
-				Log.i("Location", e.toString());
+				Log.e("Location", e.toString());
 			}
 			builder.show();
 			return true;
@@ -256,47 +280,40 @@ public class YeOldeMensa extends Activity {
 					+ date);
 
 			// Display current Mensa name
-			((TextView) findViewById(R.id.headermensa))
-					.setText(this.mensa.getName());
+			((TextView) findViewById(R.id.headermensa)).setText(this.mensa
+					.getName());
 
 			// refresh View
 			for (MenuDayView v : menuDayView) {
 				v.refreshView();
 			}
 		} catch (SocketTimeoutException e) {
-			Log.e("yom", "Exception while retrieving menu data: "
-					+ e.getMessage(), e);
-			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder
-					.setMessage(
-							"Timeout-Fehler: Die Webseite ist offline (oder lädt langsamer als in " + SimpleHTMLTokenizer.TIMEOUT + "s)!\n\nDetail: "
-									+ e).setCancelable(false)
-					.setPositiveButton("Ok",
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int id) {
-									dialog.dismiss();
-								}
-							});
-			builder.create();
-			builder.show();
+			displayException(e, "Timeout-Fehler: Die Webseite ist offline (oder lädt langsamer als in "
+							+ MensaFactory.TIMEOUT + "s)!");
 		} catch (Exception e) {
-			Log.e("yom", "Exception while retrieving menu data: "
-					+ e.getMessage(), e);
-			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder
-					.setMessage(
-							"Fehler beim Auslesen der Mensa-Webseite!\nWahrscheinlich wurde die Mensa-Webseite geändert (liegt leider ausserhalb unserer Kontrolle, bitte auf Update warten oder Mail an yeoldemensa@suepke.eu).\n\nDetail: "
-									+ e).setCancelable(false)
-					.setPositiveButton("Ok",
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int id) {
-									dialog.dismiss();
-								}
-							});
-			builder.create();
-			builder.show();
+			displayException(e, "Fehler beim Auslesen der Mensa-Webseite!\nWahrscheinlich wurde die Mensa-Webseite geändert (liegt leider ausserhalb unserer Kontrolle, bitte auf Update warten oder Mail an yeoldemensa@suepke.eu).");
 		}
 	}
+	
+	/**
+	 * @param e
+	 * @param errorMessage
+	 */
+	private void displayException(Exception e, String errorMessage) {
+		Log.e("yom", errorMessage + ": "
+				+ e.getMessage(), e);
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder
+				.setMessage(
+						errorMessage + "\n\nDetail: "
+								+ e).setCancelable(false)
+				.setPositiveButton("Ok",
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog,
+									int id) {
+								dialog.dismiss();
+							}
+						});
+		builder.create();
+		builder.show();	}
 }

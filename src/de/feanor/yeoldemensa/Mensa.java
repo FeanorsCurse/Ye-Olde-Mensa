@@ -257,4 +257,29 @@ public final class Mensa {
 	public void setValidTo(Date validTo) {
 		this.validTo = validTo;
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		StringBuffer buffer = new StringBuffer("Mensa " + name + " (id = " + id
+				+ ") {\n");
+
+		for (Day day : Day.values()) {
+			buffer.append("  " + day + ":\n");
+
+			for (String menuitemType : getMenuForDay(day).keySet()) {
+				buffer.append("    " + menuitemType + ":\n");
+
+				for (String menuitem : getMenuforDayType(day, menuitemType)) {
+					buffer.append("      - " + menuitem + "\n");
+				}
+			}
+		}
+
+		return buffer.toString();
+	}
 }
