@@ -55,7 +55,14 @@ public class YeOldeMensa extends Activity {
 	 * Version string is automatically displayed throughout the application.
 	 * Always keep same with market version number!
 	 */
-	public static final String VERSION = "1.1";
+	public static final String VERSION_PUBLIC = "1.1";
+
+	/**
+	 * Should be exactly the version as defined in the Manifest. Currently
+	 * needed for update-dialog. TODO: Can the manifest version be accessed
+	 * directly instead?
+	 */
+	public static final int VERSION_INTERNAL = 8;
 
 	// suepke: Commented out, keeps crashing my phone
 	// public SimpleGSMHelper gsm = new SimpleGSMHelper();
@@ -106,30 +113,18 @@ public class YeOldeMensa extends Activity {
 		loadMensa(settings.getInt("selected mensa", 1), false);
 
 		// Display updates
-		String lastVersion = settings.getString("last version", "-1");
+		int lastVersion = settings.getInt("previous version", -1);
 
-		if (!lastVersion.equals(VERSION)) {
-			new AlertDialog.Builder(this)
-					.setMessage(
-							"Updates in Version 1.0:\n\n"
-									+ "- Wochenansicht für Oldenburger Mensen (andere Mensen folgen in Kürze!)\n"
-									+ "- Merkt sich die zuletzt gewählte Mensa\n"
-									+ "- Mensapläne werden zwischengespeichert, dadurch deutlich schneller sobald die Pläne einmal geladen wurden\n"
-									+ "- Diverse Bugfixes (bei weiteren Bugs bitte Mail an info@yeoldemensa.de!)\n"
-									+ "- Homepage und Twitter-Account:\nhttp://twitter.com/yeoldemensa\nhttp://www.yeoldemensa.de")
-					.setCancelable(false).setPositiveButton("Ok",
-							new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog,
-										int id) {
-									dialog.dismiss();
-								}
-							}).create().show();
+		Log.d("yom", "version: " + lastVersion);
+		
+		if (lastVersion != VERSION_INTERNAL) {
+			Log.d("yom", "version: " + lastVersion);
+			UpdateDialog.getUpdateDialog(this).show();
 
 			SharedPreferences.Editor editor = settings.edit();
-			editor.putString("last version", VERSION);
+			editor.putInt("previous version", VERSION_INTERNAL);
 			editor.commit();
 		}
-
 	}
 
 	// TODO: Have a deeper look at this method (suepke)
@@ -267,7 +262,7 @@ public class YeOldeMensa extends Activity {
 		builder
 				.setMessage(
 						"Ye Olde Mensa v"
-								+ VERSION
+								+ VERSION_PUBLIC
 								+ "\n\nCopyright 2010/2011\nby Daniel Süpke\nContributions by Frederik Kramer\n\nDeine Mensa fehlt oder du hast einen Bug gefunden? Maile an info@yeoldemensa.de\n\nFolge uns auf Twitter:\nhttp://twitter.com/yeoldemensa\n\nHomepage und FAQ:\nhttp://www.yeoldemensa.de/ ")
 				// +
 				// "\n Die Entfernung\n zur ausgewählten Mensa\n beträgt zur Zeit: "
