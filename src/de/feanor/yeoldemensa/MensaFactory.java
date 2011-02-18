@@ -26,7 +26,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -151,8 +150,7 @@ public class MensaFactory {
 	 * @see #getMensa(int, Context, boolean)
 	 */
 	private Mensa _getMensa(int id, Context context, boolean forceRefetch)
-			throws MalformedURLException, IOException, JSONException,
-			ParseException {
+			throws IOException, JSONException, ParseException {
 		MensaSQLiteHelper sqlHelper = new MensaSQLiteHelper(context);
 		Date date = new Date();
 
@@ -195,23 +193,48 @@ public class MensaFactory {
 
 		mensa.setLastActualised(new Date());
 		sqlHelper.storeMensa(mensa);
+		
+		// Also, update list of Mensas while we're at it!
+		// TODO: Do this in background
+		updateMensaList(context);
 
 		Log.i("yom", "Fetching, parsing and storing the mensa took "
 				+ (new Date().getTime() - date.getTime()) + "ms.");
 		return mensa;
 	}
 
-	// TODO: See below
 	/**
 	 * @see #getMensaList(Context)
 	 */
 	private Map<Integer, String> _getMensaList(Context context)
 			throws JSONException, IOException {
-		Map<Integer, String> mensas = new HashMap<Integer, String>();
+		MensaSQLiteHelper sqlHelper = new MensaSQLiteHelper(context);
+		Map<Integer, String> mensas = sqlHelper.getMensaList();
 
-		Date date = new Date();
+		// We always use the mensa list in the database. Only if it is empty
+		// (should only happen on first run of the app) refresh it from the web
+		// server
+		if (mensas.isEmpty()) {
+			updateMensaList(context);
+			mensas = sqlHelper.getMensaList();
+		}
 
-		URLConnection conn = new URL(SERVER_URL + "/mensas.json")
+		return mensas;
+	}
+
+	/**
+	 * TODO: Only updates ID and name currently!
+	 * 
+	 * @throws IOException
+	 * @throws JSONException
+	 */
+	private void updateMensaList(Context context) throws IOException,
+			JSONException {
+		Date date = new Date(); // Used for measuring the connection speed
+		MensaSQLiteHelper sqlHelper = new MensaSQLiteHelper(context);
+		Map<Integer, String> mensas = sqlHelper.getMensaList();
+
+		URLConnection conn = new URL(SERVER_URL + "mensas.json")
 				.openConnection();
 
 		String json = convertStreamToString(conn.getInputStream());
@@ -224,10 +247,16 @@ public class MensaFactory {
 
 			mensas.put(mensaJSON.getInt("id"), mensaJSON.getString("name"));
 		}
+		
+		// Should not happen...
+		if (mensas.isEmpty()) {
+			throw new RuntimeException("Keine Mensa vom Server erhalten!");
+		}
+
+		sqlHelper.setMensaList(mensas);
 
 		Log.i("yom", "Fetching mensa list from server took "
 				+ (new Date().getTime() - date.getTime()) + "ms.");
-		return mensas;
 	}
 
 	/**
@@ -237,12 +266,13 @@ public class MensaFactory {
 	 * @author Daniel Süpke
 	 */
 	private class MensaSQLiteHelper extends SQLiteOpenHelper {
-
+		// TODO: db.close() necessary? Look up!
+		
 		/**
 		 * Used in Android. If higher than stored version, onUpgrade will be
 		 * called by android
 		 */
-		private static final int DATABASE_VERSION = 11;
+		private static final int DATABASE_VERSION = 12;
 
 		private static final String DATABASE_NAME = "yeoldemensa";
 
@@ -403,6 +433,27 @@ public class MensaFactory {
 			cursor.close();
 
 			return mensas;
+		}
+
+		/**
+		 * Stores the names and IDs of all Mensas in the db
+		 * 
+		 * @param mensas
+		 *            Map of mensas in format (ID, name)
+		 */
+		public void setMensaList(Map<Integer, String> mensas) {
+			SQLiteDatabase db = getWritableDatabase();
+
+			db.beginTransaction();
+			db.execSQL("DELETE FROM mensen");
+
+			for (Integer key : mensas.keySet()) {
+				db.execSQL("INSERT INTO mensen (id, name) VALUES (" + key
+						+ ", \"" + mensas.get(key) + "\")");
+			}
+
+			db.setTransactionSuccessful();
+			db.endTransaction();
 		}
 	}
 }

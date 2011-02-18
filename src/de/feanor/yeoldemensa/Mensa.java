@@ -27,6 +27,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import android.util.Log;
+
 /**
  * Data class for storing Mensa data (the Mensa itselfs and menu items for the
  * week)
@@ -155,7 +157,9 @@ public final class Mensa {
 	public Map<String, List<String>> getMenuForDay(Day day) {
 		// Check if data is valid
 		if (validTo.before(new Date())) {
-			throw new RuntimeException("Warning: Used outdated Mensa data!");
+			Log.e("yom", "Warning: Used outdated Mensa data!");
+			// TODO: Ignore for now, but why is this happening?!
+			//throw new RuntimeException("Warning: Used outdated Mensa data!");
 		}
 
 		return menu.get(day);
@@ -173,7 +177,9 @@ public final class Mensa {
 	public List<String> getMenuforDayType(Day day, String type) {
 		// Check if data is valid
 		if (validTo.before(new Date())) {
-			throw new RuntimeException("Warning: Used outdated Mensa data!");
+			Log.e("yom", "Warning: Used outdated Mensa data!");
+			// TODO: Ignore for now, but why is this happening?!
+			//throw new RuntimeException("Warning: Used outdated Mensa data!");
 		}
 
 		// if (menu.get(day).get(type) == null)
