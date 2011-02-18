@@ -28,7 +28,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 
+ * Data class for storing Mensa data (the Mensa itselfs and menu items for the
+ * week)
  * 
  * @author Daniel Süpke
  */
@@ -40,11 +41,12 @@ public final class Mensa {
 
 	// Map<Day, Map<type, List<menuItem>>>
 	// So, it's a map of weekdays with the menu-map, consisting of the menu
-	// types
-	// and menu items
+	// types and menu items
 	private Map<Day, Map<String, List<String>>> menu = new LinkedHashMap<Day, Map<String, List<String>>>();
 
+	// TODO: Seems strange setting validTo like this
 	private Date validTo = new GregorianCalendar(1970, 1, 1).getTime();
+
 	private Date lastActualised;
 	private String name;
 	private double longitude, latitude;
@@ -52,7 +54,10 @@ public final class Mensa {
 	private final int id;
 
 	/**
+	 * Constructor with unique id.
+	 * 
 	 * @param id
+	 *            Must be unique
 	 */
 	public Mensa(int id) {
 		this.id = id;

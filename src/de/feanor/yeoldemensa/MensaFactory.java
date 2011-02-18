@@ -40,45 +40,82 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.text.format.DateFormat;
 import android.util.Log;
 import de.feanor.yeoldemensa.Mensa.Day;
 
 /**
+ * Factory Class for single access to Mensas (and their data). Provides a
+ * high-level interface, retrieving data either from the sqlite database or from
+ * the central server.
+ * 
  * @author Daniel Süpke
  */
 public class MensaFactory {
 
+	/** Number of seconds to wait before server connection times out */
 	public static final int TIMEOUT = 10;
 
-	// Singleton pattern
-	private static MensaFactory instance;
+	/** URL of the server providing the mensa data JSON stream */
+	private static final String SERVER_URL = "http://suepke.eu:3000/";
+
+	// Singleton pattern. We cannot do it all static (without any instance)
+	// because of the inner class
+	private static MensaFactory instance = new MensaFactory();
 
 	// Singleton pattern
 	private MensaFactory() {
 	}
 
 	/**
+	 * Returns Mensa for the given ID. Will be fetched from internal sqlite db
+	 * if still up-to-date, otherwise will be retrieved from central server.
+	 * 
 	 * @param id
+	 *            ID of the mensa
 	 * @param context
+	 *            Required for the sqlite db
 	 * @param forceRefetch
-	 * @return
+	 *            If true, will refetch from server even if still valid
+	 * @return Mensa for the given id
+	 * @throws SocketTimeoutException
+	 *             Thrown if server connection times out. See
+	 *             MensaFactory.TIMEOUT
+	 * @throws IOException
+	 *             Thrown if there is a problem with the server connection
+	 *             besides TIMEOUT
 	 * @throws JSONException
+	 *             Thrown if there is a problem with the JSON stream
 	 * @throws ParseException
+	 *             Thrown if there is a problem with the JSON stream
 	 */
 	public static Mensa getMensa(int id, Context context, boolean forceRefetch)
 			throws SocketTimeoutException, IOException, JSONException,
 			ParseException {
-		if (instance == null) {
-			instance = new MensaFactory();
-		}
-
 		return instance._getMensa(id, context, forceRefetch);
+	}
+
+	// TODO: Don't do refetch from server here, is way to slow! Instead, refetch
+	// the list when getting mensa data or none available
+	// TODO: See below
+	/**
+	 * WARNING: THIS WORKS ONLY WHEN THE MENSAS ARE RETURNED FROM THE SERVERIN
+	 * ASCENDING ID, STARTING BY 1!
+	 * 
+	 * Returns all available Mensa names and their IDs
+	 * 
+	 * @param context
+	 *            Required for the sqlite db
+	 * @return Map in the format (ID, mensaName)
+	 * @throws IOException
+	 * @throws JSONException
+	 */
+	public static Map<Integer, String> getMensaList(Context context)
+			throws JSONException, IOException {
+		return instance._getMensaList(context);
 	}
 
 	// TODO: Rewrite
@@ -111,29 +148,7 @@ public class MensaFactory {
 	}
 
 	/**
-	 * @param context
-	 * @return
-	 * @throws IOException
-	 * @throws JSONException
-	 */
-	public static Map<Integer, String> getMensaList(Context context)
-			throws JSONException, IOException {
-		if (instance == null) {
-			instance = new MensaFactory();
-		}
-
-		return instance._getMensaList(context);
-	}
-
-	/**
-	 * @param id
-	 * @param context
-	 * @param forceRefetch
-	 * @return
-	 * @throws IOException
-	 * @throws MalformedURLException
-	 * @throws JSONException
-	 * @throws ParseException
+	 * @see #getMensa(int, Context, boolean)
 	 */
 	private Mensa _getMensa(int id, Context context, boolean forceRefetch)
 			throws MalformedURLException, IOException, JSONException,
@@ -153,8 +168,8 @@ public class MensaFactory {
 		Log.i("yom", "Fetching mensa data from server");
 
 		Mensa mensa = new Mensa(id);
-		URLConnection conn = new URL("http://suepke.eu:3000/mensas/" + id
-				+ ".json").openConnection();
+		URLConnection conn = new URL(SERVER_URL + "mensas/" + id + ".json")
+				.openConnection();
 
 		JSONObject mensaJson = new JSONObject(convertStreamToString(conn
 				.getInputStream())).getJSONObject("mensa");
@@ -186,14 +201,9 @@ public class MensaFactory {
 		return mensa;
 	}
 
+	// TODO: See below
 	/**
-	 * WARNING: THIS WORKS ONLY WHEN THE MENSAS ARE RETURNED IN ASCENDING ID,
-	 * STARTING BY 1!
-	 * 
-	 * @param context
-	 * @return
-	 * @throws IOException
-	 * @throws JSONException
+	 * @see #getMensaList(Context)
 	 */
 	private Map<Integer, String> _getMensaList(Context context)
 			throws JSONException, IOException {
@@ -201,7 +211,7 @@ public class MensaFactory {
 
 		Date date = new Date();
 
-		URLConnection conn = new URL("http://suepke.eu:3000/mensas.json")
+		URLConnection conn = new URL(SERVER_URL + "/mensas.json")
 				.openConnection();
 
 		String json = convertStreamToString(conn.getInputStream());
@@ -221,17 +231,26 @@ public class MensaFactory {
 	}
 
 	/**
-	 * @author suepke
+	 * Helper for the internal sqlite db of the app. Provides fast access for
+	 * storing and retrieving Mensas.
 	 * 
+	 * @author Daniel Süpke
 	 */
 	private class MensaSQLiteHelper extends SQLiteOpenHelper {
 
+		/**
+		 * Used in Android. If higher than stored version, onUpgrade will be
+		 * called by android
+		 */
 		private static final int DATABASE_VERSION = 11;
+
 		private static final String DATABASE_NAME = "yeoldemensa";
 
 		/**
-		 * @param mensa
+		 * Constructor
+		 * 
 		 * @param context
+		 *            Required for db access in android
 		 */
 		MensaSQLiteHelper(Context context) {
 			super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -257,9 +276,12 @@ public class MensaFactory {
 		}
 
 		/**
+		 * Stores the given Mensa in the db.
 		 * 
+		 * @apram mensa Mensa to store
 		 */
 		public void storeMensa(Mensa mensa) {
+			// TODO: lastActualised
 			Date date = new Date();
 			SQLiteDatabase db = getWritableDatabase();
 			int i = 0;
@@ -303,7 +325,11 @@ public class MensaFactory {
 		}
 
 		/**
+		 * Loads a Mensa from the db.
 		 * 
+		 * @param id
+		 *            ID of the Mensa to load
+		 * @return Mensa
 		 */
 		public Mensa loadMensa(int id) {
 			Mensa mensa = new Mensa(id);
@@ -334,13 +360,16 @@ public class MensaFactory {
 				mensa.addMenuItem(new MenuItem(Day.values()[cursor.getInt(2)],
 						types.get(cursor.getInt(0)), cursor.getString(3)));
 			}
-
 			cursor.close();
+
 			return mensa;
 		}
 
 		/**
-		 * @return
+		 * Retrieves the date until the Mensa for the given id is valid from the
+		 * db. If this date is after now, returns true, otherwise false.
+		 * 
+		 * @return True, if Mensa data is still up-to-date
 		 */
 		public boolean isMensaUpToDate(int id) {
 			SQLiteDatabase db = getReadableDatabase();
@@ -352,21 +381,27 @@ public class MensaFactory {
 			if (cursor.moveToFirst()) {
 				upToDate = new Date(cursor.getLong(2)).after(new Date());
 			}
-
 			cursor.close();
+
 			return upToDate;
 		}
 
+		/**
+		 * Returns all available Mensa names and their IDs from the db
+		 * 
+		 * @return Map in the format (ID, mensaName)
+		 */
 		public Map<Integer, String> getMensaList() {
 			Map<Integer, String> mensas = new HashMap<Integer, String>();
 			SQLiteDatabase db = getReadableDatabase();
+
 			Cursor cursor = db.rawQuery("SELECT * FROM mensen", null);
 
 			while (cursor.moveToNext()) {
 				mensas.put(cursor.getInt(0), cursor.getString(1));
 			}
-
 			cursor.close();
+
 			return mensas;
 		}
 	}

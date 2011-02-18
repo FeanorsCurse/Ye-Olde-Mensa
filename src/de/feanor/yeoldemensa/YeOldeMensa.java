@@ -51,15 +51,17 @@ import de.feanor.yeoldemensa.Mensa.Day;
  */
 public class YeOldeMensa extends Activity {
 
+	/**
+	 * Version string is automatically displayed throughout the application.
+	 * Always keep same with market version number!
+	 */
 	public static final String VERSION = "1.1";
-	// suepke: Keeps crashing my phone
+
+	// suepke: Commented out, keeps crashing my phone
 	// public SimpleGSMHelper gsm = new SimpleGSMHelper();
 
-	// ADD YOUR MENSA HERE, THE REST IS DONE THROUGH MAGIC
+	/** Currently displayed/selected mensa */
 	private Mensa mensa;
-
-	// Use this for testing
-	// private Mensa[] mensa = { new MensaTest() };
 
 	// One for each day of the week
 	private MenuDayView[] menuDayView = new MenuDayView[5];
@@ -130,6 +132,7 @@ public class YeOldeMensa extends Activity {
 
 	}
 
+	// TODO: Have a deeper look at this method (suepke)
 	/**
 	 * @param host
 	 * @param title
@@ -152,7 +155,9 @@ public class YeOldeMensa extends Activity {
 	}
 
 	/**
-	 * @return
+	 * Returns the currently selected mensa
+	 * 
+	 * @return Mensa
 	 */
 	public Mensa getCurrentMensa() {
 		return mensa;
@@ -167,101 +172,113 @@ public class YeOldeMensa extends Activity {
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		// TODO: This Builder stuff seems all a bit messy, see if this can be
-		// improved
-		AlertDialog.Builder builder;
-
 		switch (item.getItemId()) {
 		case R.id.refresh:
 			loadMensa(mensa.getID(), true);
 			return true;
 
 		case R.id.settings:
-			String[] mensaNames = null;
-			try {
-				// TODO: Don't depend on order
-				mensaNames = MensaFactory.getMensaList(this)
-						.values().toArray(new String [0]);
-			} catch (JSONException e) {
-				displayException(e, "Fehler im Datenformat auf yeoldemensa.de. Das sollte nicht passieren! Wir arbeiten wahrscheinlich schon dran...");
-				return true;
-			} catch (IOException e) {
-				displayException(e, "Fehler beim Aufrufen der Daten von yeoldemensa.de. Seite offline?");
-				return true;
-			}
-
-			builder = new AlertDialog.Builder(this);
-			builder.setTitle("Einstellungen");
-			builder.setSingleChoiceItems(mensaNames, -1,
-					new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog,
-								int selectedMensaID) {
-							// TODO: Don't depend on order (+1)
-							selectedMensaID++;
-							
-							loadMensa(selectedMensaID, false);
-
-							// Store selected mensa
-							SharedPreferences settings = getSharedPreferences(
-									"yom_prefs", 0);
-							SharedPreferences.Editor editor = settings.edit();
-							editor.putInt("selected mensa", selectedMensaID);
-							editor.commit();
-							dialog.dismiss();
-
-							// Todo: Mgdb
-							String name = mensa.getName();
-							if (name.startsWith("Magdeburg")
-									|| name.startsWith("Werningerode")
-									|| name.startsWith("Stendal"))
-								Toast
-										.makeText(
-												YeOldeMensa.this,
-												"Diese Mensa unterstützt bislang leider noch keine Wochenpläne und benötigt manuelles \"aktualisieren\" im Menü.\n\nWir arbeiten dran!",
-												Toast.LENGTH_LONG).show();
-						}
-					});
-			builder.setCancelable(true);
-
-			builder.create().show();
+			settingsDialog();
 			return true;
 
 		case R.id.about:
-			builder = new AlertDialog.Builder(this);
-			try {
-
-				// Location not working currently, just darkens screen
-				// (Exception, probably).
-				/*
-				 * String distance = String.valueOf(gsm
-				 * .getDistance(this.mensa[this.selectedMensa]
-				 * .getCoordinates()));
-				 */
-
-				builder
-						.setMessage(
-								"Ye Olde Mensa v"
-										+ VERSION
-										+ "\n\nCopyright 2010/2011\nby Daniel Süpke\nContributions by Frederik Kramer\n\nDeine Mensa fehlt oder du hast einen Bug gefunden? Maile an info@yeoldemensa.de\n\nFolge uns auf Twitter:\nhttp://twitter.com/yeoldemensa\n\nHomepage und FAQ:\nhttp://www.yeoldemensa.de/ ")
-						// +
-						// "\n Die Entfernung\n zur ausgewählten Mensa\n beträgt zur Zeit: "
-						// + distance + "km")
-						.setCancelable(false).setPositiveButton("Ok",
-								new DialogInterface.OnClickListener() {
-									public void onClick(DialogInterface dialog,
-											int id) {
-										dialog.dismiss();
-									}
-								});
-				builder.create();
-			} catch (Exception e) {
-				Log.e("Location", e.toString());
-			}
-			builder.show();
+			aboutDialog();
 			return true;
+
 		default:
 			return super.onOptionsItemSelected(item);
 		}
+	}
+
+	// TODO: Settings dialogue is probably better kept in its own class
+	/**
+	 * Displays a dialouge when the user pressess the settings menu button.
+	 * Currently only offers the option to select the Mensa to be displayed.
+	 * More options should follow.
+	 */
+	private void settingsDialog() {
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		String[] mensaNames = null;
+
+		try {
+			// TODO: Don't depend on order
+			mensaNames = MensaFactory.getMensaList(this).values().toArray(
+					new String[0]);
+		} catch (JSONException e) {
+			displayException(
+					e,
+					"Fehler im Datenformat auf yeoldemensa.de. Das sollte nicht passieren! Wir arbeiten wahrscheinlich schon dran...");
+			return;
+		} catch (IOException e) {
+			displayException(e,
+					"Fehler beim Aufrufen der Daten von yeoldemensa.de. Seite offline?");
+			return;
+		}
+
+		builder.setTitle("Einstellungen");
+		builder.setSingleChoiceItems(mensaNames, -1,
+				new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog,
+							int selectedMensaID) {
+						// TODO: Don't depend on order (+1)
+						selectedMensaID++;
+
+						loadMensa(selectedMensaID, false);
+
+						// Store selected mensa
+						SharedPreferences settings = getSharedPreferences(
+								"yom_prefs", 0);
+						SharedPreferences.Editor editor = settings.edit();
+						editor.putInt("selected mensa", selectedMensaID);
+						editor.commit();
+						dialog.dismiss();
+
+						// Todo: Mgdb
+						String name = mensa.getName();
+						if (name.startsWith("Magdeburg")
+								|| name.startsWith("Werningerode")
+								|| name.startsWith("Stendal"))
+							Toast
+									.makeText(
+											YeOldeMensa.this,
+											"Diese Mensa unterstützt bislang leider noch keine Wochenpläne und benötigt manuelles \"aktualisieren\" im Menü.\n\nWir arbeiten dran!",
+											Toast.LENGTH_LONG).show();
+					}
+				});
+		builder.setCancelable(true);
+
+		builder.create().show();
+	}
+
+	/**
+	 * Displays a dialogue with info about the app. Selected from app menu.
+	 */
+	private void aboutDialog() {
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+		// suepke: Location not working currently, just darkens screen
+		// (Exception, probably).
+		/*
+		 * String distance = String.valueOf(gsm
+		 * .getDistance(this.mensa[this.selectedMensa] .getCoordinates()));
+		 */
+
+		builder
+				.setMessage(
+						"Ye Olde Mensa v"
+								+ VERSION
+								+ "\n\nCopyright 2010/2011\nby Daniel Süpke\nContributions by Frederik Kramer\n\nDeine Mensa fehlt oder du hast einen Bug gefunden? Maile an info@yeoldemensa.de\n\nFolge uns auf Twitter:\nhttp://twitter.com/yeoldemensa\n\nHomepage und FAQ:\nhttp://www.yeoldemensa.de/ ")
+				// +
+				// "\n Die Entfernung\n zur ausgewählten Mensa\n beträgt zur Zeit: "
+				// + distance + "km")
+				.setCancelable(false).setPositiveButton("Ok",
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int id) {
+								dialog.dismiss();
+							}
+						});
+
+		builder.create().show();
 	}
 
 	/**
@@ -288,32 +305,40 @@ public class YeOldeMensa extends Activity {
 				v.refreshView();
 			}
 		} catch (SocketTimeoutException e) {
-			displayException(e, "Timeout-Fehler: Die Webseite ist offline (oder lädt langsamer als in "
+			displayException(e,
+					"Timeout-Fehler: Die Webseite ist offline (oder lädt langsamer als in "
 							+ MensaFactory.TIMEOUT + "s)!");
 		} catch (Exception e) {
-			displayException(e, "Fehler beim Auslesen der Mensa-Webseite!\nWahrscheinlich wurde die Mensa-Webseite geändert (liegt leider ausserhalb unserer Kontrolle, bitte auf Update warten oder Mail an yeoldemensa@suepke.eu).");
+			displayException(
+					e,
+					"Fehler beim Auslesen der Mensa-Webseite!\nWahrscheinlich wurde die Mensa-Webseite geändert (liegt leider ausserhalb unserer Kontrolle, bitte auf Update warten oder Mail an yeoldemensa@suepke.eu).");
 		}
 	}
-	
+
 	/**
+	 * Displays an exception text to the user, along with explanatory error
+	 * message. This error message should be understandable even to
+	 * non-programmers and maybe help us when they give feedback.
+	 * 
+	 * Where Exceptions might occur, always use this method! App should never
+	 * crash without an info to the user.
+	 * 
 	 * @param e
+	 *            Exception to display
 	 * @param errorMessage
+	 *            (Commonly understandable) error message to display.
 	 */
 	private void displayException(Exception e, String errorMessage) {
-		Log.e("yom", errorMessage + ": "
-				+ e.getMessage(), e);
+		Log.e("yom", errorMessage + ": " + e.getMessage(), e);
+
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder
-				.setMessage(
-						errorMessage + "\n\nDetail: "
-								+ e).setCancelable(false)
-				.setPositiveButton("Ok",
-						new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog,
-									int id) {
-								dialog.dismiss();
-							}
-						});
-		builder.create();
-		builder.show();	}
+		builder.setMessage(errorMessage + "\n\nDetail: " + e).setCancelable(
+				false).setPositiveButton("Ok",
+				new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+						dialog.dismiss();
+					}
+				});
+		builder.create().show();
+	}
 }
