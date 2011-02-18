@@ -207,11 +207,12 @@ public class YeOldeMensa extends Activity {
 		} catch (JSONException e) {
 			displayException(
 					e,
-					"Fehler im Datenformat auf yeoldemensa.de. Das sollte nicht passieren! Wir arbeiten wahrscheinlich schon dran...");
+					"Fehler im Datenformat auf yeoldemensa.de. Das sollte nicht passieren! Wir arbeiten wahrscheinlich schon dran... Falls es bis morgen nicht wieder läuft, schicke bitte eine Email an info@yeoldemensa.de!");
 			return;
 		} catch (IOException e) {
-			displayException(e,
-					"Fehler beim Aufrufen der Daten von yeoldemensa.de. Seite offline?");
+			displayException(
+					e,
+					"Fehler beim Auslesen der Mensadaten von www.yeoldemensa.de! Wir arbeiten wahrscheinlich schon dran... Falls es bis morgen nicht wieder läuft, schicke bitte eine Email an info@yeoldemensa.de!");
 			return;
 		}
 
@@ -311,7 +312,7 @@ public class YeOldeMensa extends Activity {
 		} catch (Exception e) {
 			displayException(
 					e,
-					"Fehler beim Auslesen der Mensa-Webseite!\nWahrscheinlich wurde die Mensa-Webseite geändert (liegt leider ausserhalb unserer Kontrolle, bitte auf Update warten oder Mail an yeoldemensa@suepke.eu).");
+					"Fehler beim Auslesen der Mensadaten von www.yeoldemensa.de! Wir arbeiten wahrscheinlich schon dran... Falls es bis morgen nicht wieder läuft, schicke bitte eine Email an info@yeoldemensa.de!");
 		}
 	}
 
