@@ -31,6 +31,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -65,8 +66,11 @@ public class MensaFactory {
 	// because of the inner class
 	private static MensaFactory instance = new MensaFactory();
 
-	// Singleton pattern
+	/**
+	 * Private Singleton constructor
+	 */
 	private MensaFactory() {
+		// Singleton pattern
 	}
 
 	/**
@@ -141,9 +145,8 @@ public class MensaFactory {
 				is.close();
 			}
 			return writer.toString();
-		} else {
-			return "";
 		}
+		return "";
 	}
 
 	/**
@@ -192,8 +195,9 @@ public class MensaFactory {
 		}
 
 		mensa.setLastActualised(new Date());
+		mensa.setValidTo(getNextSaturday());
 		sqlHelper.storeMensa(mensa);
-		
+
 		// Also, update list of Mensas while we're at it!
 		// TODO: Do this in background
 		updateMensaList(context);
@@ -247,7 +251,7 @@ public class MensaFactory {
 
 			mensas.put(mensaJSON.getInt("id"), mensaJSON.getString("name"));
 		}
-		
+
 		// Should not happen...
 		if (mensas.isEmpty()) {
 			throw new RuntimeException("Keine Mensa vom Server erhalten!");
@@ -260,6 +264,32 @@ public class MensaFactory {
 	}
 
 	/**
+	 * Returns the Date for next Saturday midnight. Used for valiTo in Mensa.
+	 * 
+	 * @return Date of next Saturday
+	 */
+	private Date getNextSaturday() {
+		Calendar calendar = Calendar.getInstance();
+		int weekday = calendar.get(Calendar.DAY_OF_WEEK);
+
+		calendar.set(Calendar.MINUTE, 0);
+		calendar.set(Calendar.HOUR, 0);
+
+		// TODO: Better solved with locales probably
+		if (weekday == Calendar.SATURDAY) {
+			calendar.add(Calendar.DAY_OF_MONTH, 7);
+			return calendar.getTime();
+		} else if (weekday == Calendar.SUNDAY) {
+			calendar.add(Calendar.DAY_OF_MONTH, 6);
+			return calendar.getTime();
+		} else {
+			calendar.add(Calendar.DAY_OF_MONTH, Calendar.SATURDAY - weekday);
+		}
+
+		return calendar.getTime();
+	}
+
+	/**
 	 * Helper for the internal sqlite db of the app. Provides fast access for
 	 * storing and retrieving Mensas.
 	 * 
@@ -267,7 +297,7 @@ public class MensaFactory {
 	 */
 	private class MensaSQLiteHelper extends SQLiteOpenHelper {
 		// TODO: db.close() necessary? Look up!
-		
+
 		/**
 		 * Used in Android. If higher than stored version, onUpgrade will be
 		 * called by android
@@ -311,8 +341,6 @@ public class MensaFactory {
 		 * @apram mensa Mensa to store
 		 */
 		public void storeMensa(Mensa mensa) {
-			// TODO: lastActualised
-			Date date = new Date();
 			SQLiteDatabase db = getWritableDatabase();
 			int i = 0;
 
@@ -320,6 +348,7 @@ public class MensaFactory {
 			db.execSQL("DELETE FROM mensen WHERE id=" + mensa.getID());
 			db.execSQL("DELETE FROM mtypes WHERE mensaID=" + mensa.getID());
 			db.execSQL("DELETE FROM mitems WHERE mensaID=" + mensa.getID());
+
 			db.execSQL("INSERT INTO mensen VALUES (" + mensa.getID() + ", \""
 					+ mensa.getName() + "\"," + mensa.getValidTo().getTime()
 					+ "," + mensa.getLastActualised().getTime() + ")");

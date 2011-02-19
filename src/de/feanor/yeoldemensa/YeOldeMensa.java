@@ -115,8 +115,6 @@ public class YeOldeMensa extends Activity {
 		// Display updates
 		int lastVersion = settings.getInt("previous version", -1);
 
-		Log.d("yom", "version: " + lastVersion);
-		
 		if (lastVersion != VERSION_INTERNAL) {
 			Log.d("yom", "version: " + lastVersion);
 			UpdateDialog.getUpdateDialog(this).show();

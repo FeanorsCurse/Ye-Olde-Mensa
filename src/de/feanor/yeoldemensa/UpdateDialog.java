@@ -33,7 +33,11 @@ public class UpdateDialog {
 
 	private static Map<Integer, String> updates = new HashMap<Integer, String>();
 
+	/**
+	 * Private Singleton constructor
+	 */
 	private UpdateDialog() {
+		// Singleton pattern
 	}
 
 	// TODO: Display all udpate infos since last updated version
