@@ -21,7 +21,9 @@
 package de.feanor.yeoldemensa;
 
 import java.io.IOException;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -39,9 +41,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TabHost;
+import android.widget.TabHost.TabSpec;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.TabHost.TabSpec;
 import de.feanor.yeoldemensa.Mensa.Day;
 
 /**
@@ -138,8 +140,8 @@ public class YeOldeMensa extends Activity {
 		TextView textView = (TextView) view.findViewById(R.id.tabsText);
 		textView.setText(title);
 
-		return host.newTabSpec(title).setIndicator(view).setContent(
-				new TabHost.TabContentFactory() {
+		return host.newTabSpec(title).setIndicator(view)
+				.setContent(new TabHost.TabContentFactory() {
 
 					public View createTabContent(String tag) {
 						return menuDayView2;
@@ -167,7 +169,13 @@ public class YeOldeMensa extends Activity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.refresh:
-			loadMensa(mensa.getID(), true);
+			if (mensa == null)
+				Toast.makeText(
+						YeOldeMensa.this,
+						"Keine Mensa ausgewählt. Bitte erst eine Mensa in den Einstellungen auswählen!",
+						Toast.LENGTH_LONG).show();
+			else
+				loadMensa(mensa.getID(), true);
 			return true;
 
 		case R.id.settings:
@@ -185,7 +193,7 @@ public class YeOldeMensa extends Activity {
 
 	// TODO: Settings dialogue is probably better kept in its own class
 	/**
-	 * Displays a dialouge when the user pressess the settings menu button.
+	 * Displays a dialogue when the user presses the settings menu button.
 	 * Currently only offers the option to select the Mensa to be displayed.
 	 * More options should follow.
 	 */
@@ -195,12 +203,20 @@ public class YeOldeMensa extends Activity {
 
 		try {
 			// TODO: Don't depend on order
-			mensaNames = MensaFactory.getMensaList(this).values().toArray(
-					new String[0]);
+			mensaNames = MensaFactory.getMensaList(this).values()
+					.toArray(new String[0]);
 		} catch (JSONException e) {
 			displayException(
 					e,
 					"Fehler im Datenformat auf yeoldemensa.de. Das sollte nicht passieren! Wir arbeiten wahrscheinlich schon dran... Falls es bis morgen nicht wieder läuft, schicke bitte eine Email an info@yeoldemensa.de!");
+			return;
+		} catch (UnknownHostException e) {
+			displayException(e,
+					"Fehler beim Auflösen des Hostnamens, keine Internetverbindung vorhanden?");
+			return;
+		} catch (SocketException e) {
+			displayException(e,
+					"Fehler beim Auflösen des Hostnamens, keine Internetverbindung vorhanden?");
 			return;
 		} catch (IOException e) {
 			displayException(
@@ -232,11 +248,10 @@ public class YeOldeMensa extends Activity {
 						if (name.startsWith("Magdeburg")
 								|| name.startsWith("Werningerode")
 								|| name.startsWith("Stendal"))
-							Toast
-									.makeText(
-											YeOldeMensa.this,
-											"Diese Mensa unterstützt bislang leider noch keine Wochenpläne und benötigt manuelles \"aktualisieren\" im Menü.\n\nWir arbeiten dran!",
-											Toast.LENGTH_LONG).show();
+							Toast.makeText(
+									YeOldeMensa.this,
+									"Diese Mensa unterstützt bislang leider noch keine Wochenpläne und benötigt manuelles \"aktualisieren\" im Menü.\n\nWir arbeiten dran!",
+									Toast.LENGTH_LONG).show();
 					}
 				});
 		builder.setCancelable(true);
@@ -257,20 +272,19 @@ public class YeOldeMensa extends Activity {
 		 * .getDistance(this.mensa[this.selectedMensa] .getCoordinates()));
 		 */
 
-		builder
-				.setMessage(
-						"Ye Olde Mensa v"
-								+ VERSION_PUBLIC
-								+ "\n\nCopyright 2010/2011\nby Daniel Süpke\nContributions by Frederik Kramer\n\nDeine Mensa fehlt oder du hast einen Bug gefunden? Maile an info@yeoldemensa.de\n\nFolge uns auf Twitter:\nhttp://twitter.com/yeoldemensa\n\nHomepage und FAQ:\nhttp://www.yeoldemensa.de/ ")
+		builder.setMessage(
+				"Ye Olde Mensa v"
+						+ VERSION_PUBLIC
+						+ "\n\nCopyright 2010/2011\nby Daniel Süpke\nContributions by Frederik Kramer\n\nDeine Mensa fehlt oder du hast einen Bug gefunden? Maile an info@yeoldemensa.de\n\nFolge uns auf Twitter:\nhttp://twitter.com/yeoldemensa\n\nHomepage und FAQ:\nhttp://www.yeoldemensa.de/ ")
 				// +
 				// "\n Die Entfernung\n zur ausgewählten Mensa\n beträgt zur Zeit: "
 				// + distance + "km")
-				.setCancelable(false).setPositiveButton("Ok",
-						new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog, int id) {
-								dialog.dismiss();
-							}
-						});
+				.setCancelable(false)
+				.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+						dialog.dismiss();
+					}
+				});
 
 		builder.create().show();
 	}
@@ -291,8 +305,12 @@ public class YeOldeMensa extends Activity {
 					+ date);
 
 			// Display current Mensa name
-			((TextView) findViewById(R.id.headermensa)).setText(this.mensa
-					.getName());
+			if (mensa == null)
+				((TextView) findViewById(R.id.headermensa))
+						.setText("Keine Mensa ausgewählt...");
+			else
+				((TextView) findViewById(R.id.headermensa)).setText(this.mensa
+						.getName());
 
 			// refresh View
 			for (MenuDayView v : menuDayView) {
@@ -302,6 +320,14 @@ public class YeOldeMensa extends Activity {
 			displayException(e,
 					"Timeout-Fehler: Die Webseite ist offline (oder lädt langsamer als in "
 							+ MensaFactory.TIMEOUT + "s)!");
+		} catch (UnknownHostException e) {
+			displayException(e,
+					"Fehler beim Auflösen des Hostnamens, keine Internetverbindung vorhanden?");
+			return;
+		} catch (SocketException e) {
+			displayException(e,
+					"Fehler beim Auflösen des Hostnamens, keine Internetverbindung vorhanden?");
+			return;
 		} catch (Exception e) {
 			displayException(
 					e,
@@ -326,9 +352,9 @@ public class YeOldeMensa extends Activity {
 		Log.e("yom", errorMessage + ": " + e.getMessage(), e);
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setMessage(errorMessage + "\n\nDetail: " + e).setCancelable(
-				false).setPositiveButton("Ok",
-				new DialogInterface.OnClickListener() {
+		builder.setMessage(errorMessage + "\n\nDetail: " + e)
+				.setCancelable(false)
+				.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int id) {
 						dialog.dismiss();
 					}

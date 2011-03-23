@@ -169,11 +169,10 @@ public class MensaFactory {
 		Log.i("yom", "Fetching mensa data from server");
 
 		Mensa mensa = new Mensa(id);
-		URLConnection conn = new URL(SERVER_URL + "mensas/" + id + ".json")
-				.openConnection();
 
-		JSONObject mensaJson = new JSONObject(convertStreamToString(conn
-				.getInputStream())).getJSONObject("mensa");
+		JSONObject mensaJson = new JSONObject(
+				convertStreamToString(getInputStream("mensas/" + id + ".json",
+						context))).getJSONObject("mensa");
 
 		mensa.setName(mensaJson.getString("name"));
 		mensa.setValidTo(new SimpleDateFormat("yyyy-MM-dd").parse(mensaJson
@@ -231,6 +230,7 @@ public class MensaFactory {
 	 * 
 	 * @throws IOException
 	 * @throws JSONException
+	 * @throws NoConnectionException
 	 */
 	private void updateMensaList(Context context) throws IOException,
 			JSONException {
@@ -238,10 +238,8 @@ public class MensaFactory {
 		MensaSQLiteHelper sqlHelper = new MensaSQLiteHelper(context);
 		Map<Integer, String> mensas = sqlHelper.getMensaList();
 
-		URLConnection conn = new URL(SERVER_URL + "mensas.json")
-				.openConnection();
-
-		String json = convertStreamToString(conn.getInputStream());
+		String json = convertStreamToString(getInputStream("mensas.json",
+				context));
 
 		JSONArray mensasJson = new JSONArray(json);
 
@@ -259,8 +257,31 @@ public class MensaFactory {
 
 		sqlHelper.setMensaList(mensas);
 
-		Log.i("yom", "Fetching mensa list from server took "
-				+ (new Date().getTime() - date.getTime()) + "ms.");
+		Log.i("yom",
+				"Fetching mensa list from server took "
+						+ (new Date().getTime() - date.getTime()) + "ms.");
+	}
+
+	/**
+	 * Returns an input stream for the given path on the server defined by
+	 * MensaFactory.SERVER_URL. Checks for a valid internet connection before
+	 * conneting.
+	 * 
+	 * @param path
+	 *            Path on the server/URL
+	 * @param context
+	 *            Application context, required for connection check
+	 * @return Inputstream for the given path
+	 * @throws IOException
+	 *             Thrown if problems with the connection occur
+	 */
+	private InputStream getInputStream(String path, Context context)
+			throws IOException {
+		URLConnection conn = new URL(SERVER_URL + path).openConnection();
+		conn.setConnectTimeout(TIMEOUT * 1000);
+		conn.setReadTimeout(TIMEOUT * 1000);
+
+		return conn.getInputStream();
 	}
 
 	/**
@@ -319,12 +340,9 @@ public class MensaFactory {
 		@Override
 		public void onCreate(SQLiteDatabase db) {
 			// TODO: Server and client should have same table col names.
-			db
-					.execSQL("CREATE TABLE mensen (id INTEGER PRIMARY KEY, name TEXT, validTo TIMESTAMP, actualised TIMESTAMP);");
-			db
-					.execSQL("CREATE TABLE mtypes (id INTEGER, mensaID INTEGER, name TEXT);");
-			db
-					.execSQL("CREATE TABLE mitems (mtypeID INTEGER, mensaID INTEGER, day INTEGER, name TEXT);");
+			db.execSQL("CREATE TABLE mensen (id INTEGER PRIMARY KEY, name TEXT, validTo TIMESTAMP, actualised TIMESTAMP);");
+			db.execSQL("CREATE TABLE mtypes (id INTEGER, mensaID INTEGER, name TEXT);");
+			db.execSQL("CREATE TABLE mitems (mtypeID INTEGER, mensaID INTEGER, day INTEGER, name TEXT);");
 		}
 
 		@Override
@@ -360,16 +378,13 @@ public class MensaFactory {
 				for (Day day : Day.values()) {
 					if (mensa.getMenuforDayType(day, type) != null) {
 						for (String item : mensa.getMenuforDayType(day, type)) {
-							db
-									.execSQL("INSERT INTO mitems (name, day, mtypeID, mensaID) VALUES (\""
-											+ item
-											+ "\", "
-											+ day.ordinal()
-											+ ", "
-											+ i
-											+ ", "
-											+ mensa.getID()
-											+ ")");
+							db.execSQL("INSERT INTO mitems (name, day, mtypeID, mensaID) VALUES (\""
+									+ item
+									+ "\", "
+									+ day.ordinal()
+									+ ", "
+									+ i
+									+ ", " + mensa.getID() + ")");
 						}
 					}
 				}
@@ -412,8 +427,10 @@ public class MensaFactory {
 			}
 			cursor.close();
 
-			cursor = db.rawQuery("SELECT * FROM mitems WHERE mensaID="
-					+ mensa.getID(), null);
+			cursor = db
+					.rawQuery(
+							"SELECT * FROM mitems WHERE mensaID="
+									+ mensa.getID(), null);
 
 			while (cursor.moveToNext()) {
 				mensa.addMenuItem(new MenuItem(Day.values()[cursor.getInt(2)],

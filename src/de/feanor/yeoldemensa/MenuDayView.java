@@ -61,35 +61,46 @@ public class MenuDayView extends ListView {
 	 * YeOldeMensa.getCurrentMensa()
 	 */
 	public void refreshView() {
+		Mensa mensa = context.getCurrentMensa();
+
 		// TODO: Clean up this mess. Very slow and unintuitive use of the
 		// mergeadapter contents due to a bug I was fighting with.
 		ArrayAdapter<String> a;
 
 		adapter = new MergeAdapter();
-		
+
+		// Should fix a rare bug, when no mensa has been selected. Not sure if
+		// this can occur here at all
+		if (mensa == null) {
+			List<String> list = new ArrayList<String>();
+			a = new ArrayAdapter<String>(context, R.layout.list_header, list);
+			adapter.addAdapter(a);
+			adapter.notifyDataSetChanged();
+			this.setAdapter(adapter);
+			return;
+		}
+
 		// If there is no menu data, display message to user and set up empty
 		// dummy adapter to avoid error
-		if (context.getCurrentMensa().isEmpty(day)) {
+		if (mensa.isEmpty(day)) {
 			List<String> list = new ArrayList<String>();
-			String name = context.getCurrentMensa().getName();
+			String name = mensa.getName();
 			if (name.startsWith("Magdeburg") || name.startsWith("Werningerode")
 					|| name.startsWith("Stendal"))
-				list
-						.add("Diese Mensa unterstützt bislang leider noch keine Wochenpläne und benötigt manuelles \"aktualisieren\" im Menü. Wir arbeiten dran und aktualisieren die App sobald wie möglich! (Die Webseiten sind leider deutlich komplizierter aufgebaut als die von Oldenburg)");
+				list.add("Diese Mensa unterstützt bislang leider noch keine Wochenpläne und benötigt manuelles \"aktualisieren\" im Menü. Wir arbeiten dran und aktualisieren die App sobald wie möglich! (Die Webseiten sind leider deutlich komplizierter aufgebaut als die von Oldenburg)");
 			else
 				list.add("Kein Menü gefunden. Mensa geschlossen?");
 			a = new ArrayAdapter<String>(context, R.layout.list_header, list);
 			adapter.addAdapter(a);
 		}
 
-		for (String menuType : context.getCurrentMensa().getMenuForDay(day)
-				.keySet()) {
+		for (String menuType : mensa.getMenuForDay(day).keySet()) {
 			List<String> list = new ArrayList<String>();
 			list.add(menuType);
 			a = new ArrayAdapter<String>(context, R.layout.list_header, list);
 			adapter.addAdapter(a);
-			a = new ArrayAdapter<String>(context, R.layout.list_item, context
-					.getCurrentMensa().getMenuforDayType(day, menuType));
+			a = new ArrayAdapter<String>(context, R.layout.list_item,
+					mensa.getMenuforDayType(day, menuType));
 			adapter.addAdapter(a);
 		}
 
