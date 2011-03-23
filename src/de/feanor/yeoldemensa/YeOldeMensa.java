@@ -275,7 +275,7 @@ public class YeOldeMensa extends Activity {
 		builder.setMessage(
 				"Ye Olde Mensa v"
 						+ VERSION_PUBLIC
-						+ "\n\nCopyright 2010/2011\nby Daniel Süpke\nContributions by Frederik Kramer\n\nDeine Mensa fehlt oder du hast einen Bug gefunden? Maile an info@yeoldemensa.de\n\nFolge uns auf Twitter:\nhttp://twitter.com/yeoldemensa\n\nHomepage und FAQ:\nhttp://www.yeoldemensa.de/ ")
+						+ "\n\nCopyright 2010/2011\nby Daniel Süpke\nContributions by Frederik Kramer und Markus Schneider\n\nDeine Mensa fehlt oder du hast einen Bug gefunden? Maile an info@yeoldemensa.de\n\nFolge uns auf Twitter:\nhttp://twitter.com/yeoldemensa\n\nHomepage und FAQ:\nhttp://www.yeoldemensa.de/ ")
 				// +
 				// "\n Die Entfernung\n zur ausgewählten Mensa\n beträgt zur Zeit: "
 				// + distance + "km")
