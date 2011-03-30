@@ -57,14 +57,14 @@ public class YeOldeMensa extends Activity {
 	 * Version string is automatically displayed throughout the application.
 	 * Always keep same with market version number!
 	 */
-	public static final String VERSION_PUBLIC = "1.1";
+	public static final String VERSION_PUBLIC = "1.3";
 
 	/**
 	 * Should be exactly the version as defined in the Manifest. Currently
 	 * needed for update-dialog. TODO: Can the manifest version be accessed
 	 * directly instead?
 	 */
-	public static final int VERSION_INTERNAL = 8;
+	public static final int VERSION_INTERNAL = 9;
 
 	// suepke: Commented out, keeps crashing my phone
 	// public SimpleGSMHelper gsm = new SimpleGSMHelper();
@@ -118,7 +118,6 @@ public class YeOldeMensa extends Activity {
 		int lastVersion = settings.getInt("previous version", -1);
 
 		if (lastVersion != VERSION_INTERNAL) {
-			Log.d("yom", "version: " + lastVersion);
 			UpdateDialog.getUpdateDialog(this).show();
 
 			SharedPreferences.Editor editor = settings.edit();

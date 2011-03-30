@@ -394,6 +394,7 @@ public class MensaFactory {
 
 			db.setTransactionSuccessful();
 			db.endTransaction();
+			db.close();
 
 			isMensaUpToDate(mensa.getID());
 		}
@@ -437,6 +438,7 @@ public class MensaFactory {
 						types.get(cursor.getInt(0)), cursor.getString(3)));
 			}
 			cursor.close();
+			db.close();
 
 			return mensa;
 		}
@@ -458,6 +460,7 @@ public class MensaFactory {
 				upToDate = new Date(cursor.getLong(2)).after(new Date());
 			}
 			cursor.close();
+			db.close();
 
 			return upToDate;
 		}
@@ -477,7 +480,8 @@ public class MensaFactory {
 				mensas.put(cursor.getInt(0), cursor.getString(1));
 			}
 			cursor.close();
-
+			db.close();
+			
 			return mensas;
 		}
 
@@ -500,6 +504,7 @@ public class MensaFactory {
 
 			db.setTransactionSuccessful();
 			db.endTransaction();
+			db.close();
 		}
 	}
 }

@@ -64,6 +64,16 @@ public class UpdateDialog {
 
 	private static void setupVersions() {
 		updates
+		.put(
+				9,
+				"Updates in Version 1.3:\n\n"
+						+ "- Unterstützung für ältere Android-Handys (bis v1.6)\n"
+						+ "- App2sd-Unterstützung\n"
+						+ "- Speicherleck in der DB gefixt\n"
+						+ "Evtl. auftretende Probleme/Wünsche bitte wie üblich an info@yeoldemensa.de!");
+
+
+		updates
 				.put(
 						8,
 						"Updates in Version 1.2:\n\n"
