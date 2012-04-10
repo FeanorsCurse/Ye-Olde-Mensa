@@ -33,7 +33,7 @@ import android.util.Log;
  * Data class for storing Mensa data (the Mensa itselfs and menu items for the
  * week)
  * 
- * @author Daniel SÃ¼pke
+ * @author Daniel SŸpke
  */
 public final class Mensa {
 
@@ -65,8 +65,9 @@ public final class Mensa {
 		this.id = id;
 
 		// Set up hashmaps for each week day
-		for (Day day : Day.values())
+		for (Day day : Day.values()) {
 			menu.put(day, new LinkedHashMap<String, List<String>>());
+		}
 	}
 
 	/**
@@ -159,7 +160,7 @@ public final class Mensa {
 		if (validTo.before(new Date())) {
 			Log.e("yom", "Warning: Used outdated Mensa data!");
 			// TODO: Ignore for now, but why is this happening?!
-			//throw new RuntimeException("Warning: Used outdated Mensa data!");
+			// throw new RuntimeException("Warning: Used outdated Mensa data!");
 		}
 
 		return menu.get(day);
@@ -179,7 +180,7 @@ public final class Mensa {
 		if (validTo.before(new Date())) {
 			Log.e("yom", "Warning: Used outdated Mensa data!");
 			// TODO: Ignore for now, but why is this happening?!
-			//throw new RuntimeException("Warning: Used outdated Mensa data!");
+			// throw new RuntimeException("Warning: Used outdated Mensa data!");
 		}
 
 		// if (menu.get(day).get(type) == null)
@@ -214,8 +215,9 @@ public final class Mensa {
 	 */
 	public boolean isEmpty(Day day) {
 		for (String type : menu.get(day).keySet()) {
-			if (!menu.get(day).get(type).isEmpty())
+			if (!menu.get(day).get(type).isEmpty()) {
 				return false;
+			}
 		}
 
 		return true;

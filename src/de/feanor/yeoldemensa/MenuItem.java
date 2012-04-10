@@ -24,7 +24,7 @@ import de.feanor.yeoldemensa.Mensa.Day;
 /**
  * Data class for a single menu item.
  * 
- * @author Daniel SÃ¼pke
+ * @author Daniel SŸpke
  */
 public class MenuItem {
 	public Day day;

@@ -52,7 +52,7 @@ import de.feanor.yeoldemensa.Mensa.Day;
  * high-level interface, retrieving data either from the sqlite database or from
  * the central server.
  * 
- * @author Daniel SÃ¼pke
+ * @author Daniel SŸpke
  */
 public class MensaFactory {
 
@@ -481,7 +481,7 @@ public class MensaFactory {
 			}
 			cursor.close();
 			db.close();
-			
+
 			return mensas;
 		}
 

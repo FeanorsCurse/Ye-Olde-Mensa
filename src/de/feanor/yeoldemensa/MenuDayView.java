@@ -32,7 +32,7 @@ import de.feanor.yeoldemensa.Mensa.Day;
 /**
  * Provides the view for a tab representing one day of a Mensa.
  * 
- * @author Daniel Süpke
+ * @author Daniel S�pke
  */
 public class MenuDayView extends ListView {
 
@@ -86,10 +86,11 @@ public class MenuDayView extends ListView {
 			List<String> list = new ArrayList<String>();
 			String name = mensa.getName();
 			if (name.startsWith("Magdeburg") || name.startsWith("Werningerode")
-					|| name.startsWith("Stendal"))
+					|| name.startsWith("Stendal")) {
 				list.add("Diese Mensa unterstützt bislang leider noch keine Wochenpläne und benötigt manuelles \"aktualisieren\" im Menü. Wir arbeiten dran und aktualisieren die App sobald wie möglich! (Die Webseiten sind leider deutlich komplizierter aufgebaut als die von Oldenburg)");
-			else
+			} else {
 				list.add("Kein Menü gefunden. Mensa geschlossen?");
+			}
 			a = new ArrayAdapter<String>(context, R.layout.list_header, list);
 			adapter.addAdapter(a);
 		}

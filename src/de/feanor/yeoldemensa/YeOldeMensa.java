@@ -49,7 +49,7 @@ import de.feanor.yeoldemensa.Mensa.Day;
 /**
  * Main class of the application.
  * 
- * @author Daniel S체pke
+ * @author Daniel S웤ke
  */
 public class YeOldeMensa extends Activity {
 
@@ -104,10 +104,11 @@ public class YeOldeMensa extends Activity {
 		// Select tab for current day or Monday on weekends
 		int currentDay = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
 
-		if (currentDay >= Calendar.MONDAY && currentDay <= Calendar.FRIDAY)
+		if (currentDay >= Calendar.MONDAY && currentDay <= Calendar.FRIDAY) {
 			host.setCurrentTab(currentDay - 2);
-		else
+		} else {
 			host.setCurrentTab(Calendar.MONDAY - 2);
+		}
 
 		// Retrieve and load selected mensa
 		SharedPreferences settings = getSharedPreferences("yom_prefs", 0);
@@ -142,6 +143,7 @@ public class YeOldeMensa extends Activity {
 		return host.newTabSpec(title).setIndicator(view)
 				.setContent(new TabHost.TabContentFactory() {
 
+					@Override
 					public View createTabContent(String tag) {
 						return menuDayView2;
 					}
@@ -168,13 +170,14 @@ public class YeOldeMensa extends Activity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.refresh:
-			if (mensa == null)
+			if (mensa == null) {
 				Toast.makeText(
 						YeOldeMensa.this,
 						"Keine Mensa ausgew채hlt. Bitte erst eine Mensa in den Einstellungen ausw채hlen!",
 						Toast.LENGTH_LONG).show();
-			else
+			} else {
 				loadMensa(mensa.getID(), true);
+			}
 			return true;
 
 		case R.id.settings:
@@ -227,6 +230,7 @@ public class YeOldeMensa extends Activity {
 		builder.setTitle("Einstellungen");
 		builder.setSingleChoiceItems(mensaNames, -1,
 				new DialogInterface.OnClickListener() {
+					@Override
 					public void onClick(DialogInterface dialog,
 							int selectedMensaID) {
 						// TODO: Don't depend on order (+1)
@@ -246,11 +250,12 @@ public class YeOldeMensa extends Activity {
 						String name = mensa.getName();
 						if (name.startsWith("Magdeburg")
 								|| name.startsWith("Werningerode")
-								|| name.startsWith("Stendal"))
+								|| name.startsWith("Stendal")) {
 							Toast.makeText(
 									YeOldeMensa.this,
 									"Diese Mensa unterst체tzt bislang leider noch keine Wochenpl채ne und ben철tigt manuelles \"aktualisieren\" im Men체.\n\nWir arbeiten dran!",
 									Toast.LENGTH_LONG).show();
+						}
 					}
 				});
 		builder.setCancelable(true);
@@ -280,6 +285,7 @@ public class YeOldeMensa extends Activity {
 				// + distance + "km")
 				.setCancelable(false)
 				.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+					@Override
 					public void onClick(DialogInterface dialog, int id) {
 						dialog.dismiss();
 					}
@@ -304,12 +310,13 @@ public class YeOldeMensa extends Activity {
 					+ date);
 
 			// Display current Mensa name
-			if (mensa == null)
+			if (mensa == null) {
 				((TextView) findViewById(R.id.headermensa))
 						.setText("Keine Mensa ausgew채hlt...");
-			else
+			} else {
 				((TextView) findViewById(R.id.headermensa)).setText(this.mensa
 						.getName());
+			}
 
 			// refresh View
 			for (MenuDayView v : menuDayView) {
@@ -354,6 +361,7 @@ public class YeOldeMensa extends Activity {
 		builder.setMessage(errorMessage + "\n\nDetail: " + e)
 				.setCancelable(false)
 				.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+					@Override
 					public void onClick(DialogInterface dialog, int id) {
 						dialog.dismiss();
 					}
