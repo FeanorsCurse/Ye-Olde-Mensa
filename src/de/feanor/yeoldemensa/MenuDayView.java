@@ -87,9 +87,9 @@ public class MenuDayView extends ListView {
 			String name = mensa.getName();
 			if (name.startsWith("Magdeburg") || name.startsWith("Werningerode")
 					|| name.startsWith("Stendal")) {
-				list.add("Diese Mensa unterst√ºtzt bislang leider noch keine Wochenpl√§ne und ben√∂tigt manuelles \"aktualisieren\" im Men√º. Wir arbeiten dran und aktualisieren die App sobald wie m√∂glich! (Die Webseiten sind leider deutlich komplizierter aufgebaut als die von Oldenburg)");
+				list.add("Diese Mensa unterstützt bislang leider noch keine Wochenpläne und benötigt manuelles \"aktualisieren\" im Menü. Wir arbeiten dran und aktualisieren die App sobald wie m√∂glich! (Die Webseiten sind leider deutlich komplizierter aufgebaut als die von Oldenburg)");
 			} else {
-				list.add("Kein Men√º gefunden. Mensa geschlossen?");
+				list.add("Kein Menü gefunden. Mensa geschlossen?");
 			}
 			a = new ArrayAdapter<String>(context, R.layout.list_header, list);
 			adapter.addAdapter(a);

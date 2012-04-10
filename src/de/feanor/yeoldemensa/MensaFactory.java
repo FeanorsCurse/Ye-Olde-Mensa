@@ -31,9 +31,11 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.json.JSONArray;
@@ -115,9 +117,10 @@ public class MensaFactory {
 	 * @return Map in the format (ID, mensaName)
 	 * @throws IOException
 	 * @throws JSONException
+	 * @throws ParseException
 	 */
 	public static Map<Integer, String> getMensaList(Context context)
-			throws JSONException, IOException {
+			throws JSONException, IOException, ParseException {
 		return instance._getMensaList(context);
 	}
 
@@ -160,25 +163,26 @@ public class MensaFactory {
 		// If we are up to date and don't need to fetch per user request, just
 		// load from db and be done
 		if (sqlHelper.isMensaUpToDate(id) && !forceRefetch) {
-			Log.i("yom", "Using internal database for mensa data");
+			Log.d("yom", "Using internal database for mensa data");
 			Mensa mensa = sqlHelper.loadMensa(id);
-			Log.i("yom", "Fetching the mensa took "
+			Log.d("yom", "Fetching the mensa took "
 					+ (new Date().getTime() - date.getTime()) + "ms.");
 			return mensa;
 		}
-		Log.i("yom", "Fetching mensa data from server");
+		Log.i("yom", "Fetching mensa data from server (forceRefetch="
+				+ forceRefetch + ")");
 
 		Mensa mensa = new Mensa(id);
 
-		JSONObject mensaJson = new JSONObject(
+		JSONObject mensaJSON = new JSONObject(
 				convertStreamToString(getInputStream("mensas/" + id + ".json",
 						context))).getJSONObject("mensa");
 
-		mensa.setName(mensaJson.getString("name"));
-		mensa.setValidTo(new SimpleDateFormat("yyyy-MM-dd").parse(mensaJson
+		mensa.setName(mensaJSON.getString("name"));
+		mensa.setValidTo(new SimpleDateFormat("yyyy-MM-dd").parse(mensaJSON
 				.getString("validTo").substring(0, 10)));
 
-		JSONArray mitemTypesJson = mensaJson.getJSONArray("menu_item_types");
+		JSONArray mitemTypesJson = mensaJSON.getJSONArray("menu_item_types");
 
 		for (int i = 0; i < mitemTypesJson.length(); i++) {
 			JSONObject mitemTypeJson = mitemTypesJson.getJSONObject(i);
@@ -210,7 +214,7 @@ public class MensaFactory {
 	 * @see #getMensaList(Context)
 	 */
 	private Map<Integer, String> _getMensaList(Context context)
-			throws JSONException, IOException {
+			throws JSONException, IOException, ParseException {
 		MensaSQLiteHelper sqlHelper = new MensaSQLiteHelper(context);
 		Map<Integer, String> mensas = sqlHelper.getMensaList();
 
@@ -226,28 +230,41 @@ public class MensaFactory {
 	}
 
 	/**
-	 * TODO: Only updates ID and name currently!
+	 * Will update the list of available mensas. Do not call after fetching the
+	 * content of a mensa, will reset the actualisation date!
 	 * 
 	 * @throws IOException
 	 * @throws JSONException
+	 * @throws ParseException
 	 * @throws NoConnectionException
 	 */
 	private void updateMensaList(Context context) throws IOException,
-			JSONException {
+			JSONException, ParseException {
 		Date date = new Date(); // Used for measuring the connection speed
 		MensaSQLiteHelper sqlHelper = new MensaSQLiteHelper(context);
-		Map<Integer, String> mensas = sqlHelper.getMensaList();
+		List<Mensa> mensas = new ArrayList<Mensa>();
 
 		String json = convertStreamToString(getInputStream("mensas.json",
 				context));
 
-		JSONArray mensasJson = new JSONArray(json);
+		JSONArray mensasJSON = new JSONArray(json);
 
-		for (int i = 0; i < mensasJson.length(); i++) {
-			JSONObject mensaJSON = mensasJson.getJSONObject(i).getJSONObject(
+		for (int i = 0; i < mensasJSON.length(); i++) {
+			JSONObject mensaJSON = mensasJSON.getJSONObject(i).getJSONObject(
 					"mensa");
+			Mensa mensa = new Mensa(mensaJSON.getInt("id"));
+			mensa.setName(mensaJSON.getString("name"));
+			mensa.setValidTo(new SimpleDateFormat("yyyy-MM-dd").parse(mensaJSON
+					.getString("validTo").substring(0, 10)));
 
-			mensas.put(mensaJSON.getInt("id"), mensaJSON.getString("name"));
+			// If the mensa's content is up to date, set the last actualized
+			// date so not to refetch it's data
+			if (sqlHelper.isMensaUpToDate(mensa.getID())) {
+				mensa.setLastActualised(sqlHelper.loadMensa(mensa.getID())
+						.getLastActualised());
+			}
+
+			mensas.add(mensa);
 		}
 
 		// Should not happen...
@@ -314,7 +331,7 @@ public class MensaFactory {
 	 * Helper for the internal sqlite db of the app. Provides fast access for
 	 * storing and retrieving Mensas.
 	 * 
-	 * @author Daniel SÃ¼pke
+	 * @author Daniel SŸpke
 	 */
 	private class MensaSQLiteHelper extends SQLiteOpenHelper {
 		// TODO: db.close() necessary? Look up!
@@ -323,7 +340,7 @@ public class MensaFactory {
 		 * Used in Android. If higher than stored version, onUpgrade will be
 		 * called by android
 		 */
-		private static final int DATABASE_VERSION = 12;
+		private static final int DATABASE_VERSION = 13;
 
 		private static final String DATABASE_NAME = "yeoldemensa";
 
@@ -361,6 +378,9 @@ public class MensaFactory {
 		public void storeMensa(Mensa mensa) {
 			SQLiteDatabase db = getWritableDatabase();
 			int i = 0;
+			Long lastActualised = mensa.getLastActualised() != null ? mensa
+					.getLastActualised().getTime() : null;
+			Map<String, Integer> types = new HashMap<String, Integer>();
 
 			db.beginTransaction();
 			db.execSQL("DELETE FROM mensen WHERE id=" + mensa.getID());
@@ -369,22 +389,40 @@ public class MensaFactory {
 
 			db.execSQL("INSERT INTO mensen VALUES (" + mensa.getID() + ", \""
 					+ mensa.getName() + "\"," + mensa.getValidTo().getTime()
-					+ "," + mensa.getLastActualised().getTime() + ")");
+					+ "," + lastActualised + ")");
+			Log.d("yom", "INSERT INTO mensen VALUES (" + mensa.getID() + ", \""
+					+ mensa.getName() + "\"," + mensa.getValidTo().getTime()
+					+ "," + lastActualised + ")");
 
-			for (String type : mensa.getMenuForDay(Day.MONDAY).keySet()) {
-				db.execSQL("INSERT INTO mtypes VALUES (" + i + ", "
-						+ mensa.getID() + ", \"" + type + "\")");
+			for (Day day : Day.values()) {
+				for (String type : mensa.getMenuForDay(day).keySet()) {
+					Integer typeID = types.get(type);
+					if (typeID == null) {
+						typeID = i++;
+						Log.d("yom", "INSERT INTO mtypes VALUES (" + typeID
+								+ ", " + mensa.getID() + ", \"" + type + "\")");
+						db.execSQL("INSERT INTO mtypes VALUES (" + typeID
+								+ ", " + mensa.getID() + ", \"" + type + "\")");
+					}
 
-				for (Day day : Day.values()) {
 					if (mensa.getMenuforDayType(day, type) != null) {
+						Log.d("yom",
+								"mensa " + mensa.getName() + " with Menu: "
+										+ mensa.getMenuforDayType(day, type));
 						for (String item : mensa.getMenuforDayType(day, type)) {
+							Log.d("yom",
+									"Inserting "
+											+ (item.length() > 10 ? item
+													.substring(0, 10) + "..."
+													: item) + " into " + type
+											+ " at " + day + " for "
+											+ mensa.getName());
 							db.execSQL("INSERT INTO mitems (name, day, mtypeID, mensaID) VALUES (\""
 									+ item
 									+ "\", "
 									+ day.ordinal()
 									+ ", "
-									+ i
-									+ ", " + mensa.getID() + ")");
+									+ typeID + ", " + mensa.getID() + ")");
 						}
 					}
 				}
@@ -395,12 +433,11 @@ public class MensaFactory {
 			db.setTransactionSuccessful();
 			db.endTransaction();
 			db.close();
-
-			isMensaUpToDate(mensa.getID());
 		}
 
 		/**
-		 * Loads a Mensa from the db.
+		 * Loads a Mensa from the db. Returns null if the mensa has not been
+		 * found.
 		 * 
 		 * @param id
 		 *            ID of the Mensa to load
@@ -413,6 +450,10 @@ public class MensaFactory {
 
 			Cursor cursor = db.rawQuery("SELECT * FROM mensen WHERE id="
 					+ mensa.getID(), null);
+
+			if (cursor.getCount() == 0) {
+				return null;
+			}
 
 			cursor.moveToFirst();
 			mensa.setName(cursor.getString(1));
@@ -445,7 +486,8 @@ public class MensaFactory {
 
 		/**
 		 * Retrieves the date until the Mensa for the given id is valid from the
-		 * db. If this date is after now, returns true, otherwise false.
+		 * db. If this date is after now, returns true, otherwise false. If the
+		 * mensa has not been found, also returns false.
 		 * 
 		 * @return True, if Mensa data is still up-to-date
 		 */
@@ -486,22 +528,26 @@ public class MensaFactory {
 		}
 
 		/**
-		 * Stores the names and IDs of all Mensas in the db
+		 * Stores all mensa in the db. Warning: Do NOT call after store mensa
+		 * for a specific Mensa, as it will overwrite actualizedAt!
 		 * 
 		 * @param mensas
 		 *            Map of mensas in format (ID, name)
 		 */
-		public void setMensaList(Map<Integer, String> mensas) {
+		public void setMensaList(List<Mensa> mensas) {
 			SQLiteDatabase db = getWritableDatabase();
 
 			db.beginTransaction();
 			db.execSQL("DELETE FROM mensen");
 
-			for (Integer key : mensas.keySet()) {
-				db.execSQL("INSERT INTO mensen (id, name) VALUES (" + key
-						+ ", \"" + mensas.get(key) + "\")");
+			for (Mensa mensa : mensas) {
+				Long lastActualised = mensa.getLastActualised() != null ? mensa
+						.getLastActualised().getTime() : null;
+				db.execSQL("INSERT INTO mensen VALUES (" + mensa.getID()
+						+ ", \"" + mensa.getName() + "\","
+						+ mensa.getValidTo().getTime() + "," + lastActualised
+						+ ")");
 			}
-
 			db.setTransactionSuccessful();
 			db.endTransaction();
 			db.close();

@@ -20,7 +20,6 @@
 
 package de.feanor.yeoldemensa;
 
-import java.io.IOException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
@@ -57,14 +56,14 @@ public class YeOldeMensa extends Activity {
 	 * Version string is automatically displayed throughout the application.
 	 * Always keep same with market version number!
 	 */
-	public static final String VERSION_PUBLIC = "1.3";
+	public static final String VERSION_PUBLIC = "1.4";
 
 	/**
 	 * Should be exactly the version as defined in the Manifest. Currently
 	 * needed for update-dialog. TODO: Can the manifest version be accessed
 	 * directly instead?
 	 */
-	public static final int VERSION_INTERNAL = 9;
+	public static final int VERSION_INTERNAL = 10;
 
 	// suepke: Commented out, keeps crashing my phone
 	// public SimpleGSMHelper gsm = new SimpleGSMHelper();
@@ -214,13 +213,13 @@ public class YeOldeMensa extends Activity {
 			return;
 		} catch (UnknownHostException e) {
 			displayException(e,
-					"Fehler beim Aufl√∂sen des Hostnamens, keine Internetverbindung vorhanden?");
+					"Fehler beim Auflösen des Hostnamens, keine Internetverbindung vorhanden?");
 			return;
 		} catch (SocketException e) {
 			displayException(e,
-					"Fehler beim Aufl√∂sen des Hostnamens, keine Internetverbindung vorhanden?");
+					"Fehler beim Auflösen des Hostnamens, keine Internetverbindung vorhanden?");
 			return;
-		} catch (IOException e) {
+		} catch (Exception e) {
 			displayException(
 					e,
 					"Fehler beim Auslesen der Mensadaten von www.yeoldemensa.de! Wir arbeiten wahrscheinlich schon dran... Falls es bis morgen nicht wieder l√§uft, schicke bitte eine Email an info@yeoldemensa.de!");
@@ -253,7 +252,7 @@ public class YeOldeMensa extends Activity {
 								|| name.startsWith("Stendal")) {
 							Toast.makeText(
 									YeOldeMensa.this,
-									"Diese Mensa unterst√ºtzt bislang leider noch keine Wochenpl√§ne und ben√∂tigt manuelles \"aktualisieren\" im Men√º.\n\nWir arbeiten dran!",
+									"Diese Mensa unterstützt bislang leider noch keine Wochenpläne und benötigt manuelles \"aktualisieren\" im Menü.\n\nWir arbeiten dran!",
 									Toast.LENGTH_LONG).show();
 						}
 					}
@@ -279,7 +278,7 @@ public class YeOldeMensa extends Activity {
 		builder.setMessage(
 				"Ye Olde Mensa v"
 						+ VERSION_PUBLIC
-						+ "\n\nCopyright 2010/2011\nby Daniel S√ºpke\nContributions by Frederik Kramer und Markus Schneider\n\nDeine Mensa fehlt oder du hast einen Bug gefunden? Maile an info@yeoldemensa.de\n\nFolge uns auf Twitter:\nhttp://twitter.com/yeoldemensa\n\nHomepage und FAQ:\nhttp://www.yeoldemensa.de/ ")
+						+ "\n\nCopyright 2010/2011\nby Daniel Süpke\nContributions by Frederik Kramer und Markus Schneider\n\nDeine Mensa fehlt oder du hast einen Bug gefunden? Maile an info@yeoldemensa.de\n\nFolge uns auf Twitter:\nhttp://twitter.com/yeoldemensa\n\nHomepage und FAQ:\nhttp://www.yeoldemensa.de/ ")
 				// +
 				// "\n Die Entfernung\n zur ausgew√§hlten Mensa\n betr√§gt zur Zeit: "
 				// + distance + "km")
@@ -324,20 +323,20 @@ public class YeOldeMensa extends Activity {
 			}
 		} catch (SocketTimeoutException e) {
 			displayException(e,
-					"Timeout-Fehler: Die Webseite ist offline (oder l√§dt langsamer als in "
+					"Timeout-Fehler: Die Webseite ist offline (oder lädt langsamer als in "
 							+ MensaFactory.TIMEOUT + "s)!");
 		} catch (UnknownHostException e) {
 			displayException(e,
-					"Fehler beim Aufl√∂sen des Hostnamens, keine Internetverbindung vorhanden?");
+					"Fehler beim Auflösen des Hostnamens, keine Internetverbindung vorhanden?");
 			return;
 		} catch (SocketException e) {
 			displayException(e,
-					"Fehler beim Aufl√∂sen des Hostnamens, keine Internetverbindung vorhanden?");
+					"Fehler beim Auflösen des Hostnamens, keine Internetverbindung vorhanden?");
 			return;
 		} catch (Exception e) {
 			displayException(
 					e,
-					"Fehler beim Auslesen der Mensadaten von www.yeoldemensa.de! Wir arbeiten wahrscheinlich schon dran... Falls es bis morgen nicht wieder l√§uft, schicke bitte eine Email an info@yeoldemensa.de!");
+					"Fehler beim Auslesen der Mensadaten von www.yeoldemensa.de! Wir arbeiten wahrscheinlich schon dran... Falls es bis morgen nicht wieder läuft, schicke bitte eine Email an info@yeoldemensa.de!");
 		}
 	}
 
