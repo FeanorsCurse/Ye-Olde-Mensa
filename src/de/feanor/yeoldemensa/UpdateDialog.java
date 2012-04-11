@@ -56,8 +56,8 @@ public class UpdateDialog {
 				.setCancelable(false)
 				.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 					@Override
-					public void onClick(DialogInterface dialog, int id) {
-						dialog.dismiss();
+					public void onClick(DialogInterface dialogInterface, int id) {
+						dialogInterface.dismiss();
 					}
 				}).create();
 
@@ -69,7 +69,8 @@ public class UpdateDialog {
 				10,
 				"Nachdem ich meine Doktorarbeit erfolgreich verteidigt habe, finde ich jetzt hoffentlich wieder mehr Zeit für die App :)\n"
 						+ "Updates in Version 1.4:\n\n"
-						+ "- Datenbank endlich gefixt - Mensen sind nach Abruf auch ohne Internet verfügbar");
+						+ "- Datenbank endlich gefixt - Mensen sind nach Abruf auch ohne Internet verfügbar\n"
+						+ "- Ladebildschirm bei Aktualisierung vom Server");
 		updates.put(
 				9,
 				"Updates in Version 1.3:\n\n"

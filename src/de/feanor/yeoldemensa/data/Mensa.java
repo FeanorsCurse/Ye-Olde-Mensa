@@ -18,7 +18,7 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.feanor.yeoldemensa;
+package de.feanor.yeoldemensa.data;
 
 import java.util.ArrayList;
 import java.util.Date;

@@ -17,9 +17,9 @@
  *   You should have received a copy of the GNU General Public License
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package de.feanor.yeoldemensa;
+package de.feanor.yeoldemensa.data;
 
-import de.feanor.yeoldemensa.Mensa.Day;
+import de.feanor.yeoldemensa.data.Mensa.Day;
 
 /**
  * Data class for a single menu item.

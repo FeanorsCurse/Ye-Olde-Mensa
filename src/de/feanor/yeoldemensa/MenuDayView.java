@@ -27,7 +27,8 @@ import android.widget.ListView;
 
 import com.commonsware.cwac.merge.MergeAdapter;
 
-import de.feanor.yeoldemensa.Mensa.Day;
+import de.feanor.yeoldemensa.data.Mensa;
+import de.feanor.yeoldemensa.data.Mensa.Day;
 
 /**
  * Provides the view for a tab representing one day of a Mensa.

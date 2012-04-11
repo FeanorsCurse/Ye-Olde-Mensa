@@ -32,6 +32,7 @@ import org.json.JSONException;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -46,7 +47,9 @@ import android.widget.TabHost;
 import android.widget.TabHost.TabSpec;
 import android.widget.TextView;
 import android.widget.Toast;
-import de.feanor.yeoldemensa.Mensa.Day;
+import de.feanor.yeoldemensa.data.Mensa;
+import de.feanor.yeoldemensa.data.MensaFactory;
+import de.feanor.yeoldemensa.data.Mensa.Day;
 
 /**
  * Main class of the application.
@@ -68,6 +71,12 @@ public class YeOldeMensa extends Activity {
 	 */
 	public static final int VERSION_INTERNAL = 10;
 
+	/**
+	 * The application context, required e.g. in the MensaSQLiteHelper. Can be
+	 * decoupled if necessary.
+	 */
+	public static Context context;
+
 	// suepke: Commented out, keeps crashing my phone
 	// public SimpleGSMHelper gsm = new SimpleGSMHelper();
 
@@ -82,6 +91,7 @@ public class YeOldeMensa extends Activity {
 		super.onCreate(savedInstanceState);
 
 		Log.i("yom", "### Starting application ###");
+		context = this;
 		setContentView(R.layout.main);
 
 		// setCurrentCoordinates;
@@ -207,7 +217,7 @@ public class YeOldeMensa extends Activity {
 
 		try {
 			// TODO: Don't depend on order
-			mensaNames = MensaFactory.getMensaList(this).values()
+			mensaNames = MensaFactory.getMensaList().values()
 					.toArray(new String[0]);
 		} catch (JSONException e) {
 			displayException(
@@ -302,8 +312,7 @@ public class YeOldeMensa extends Activity {
 	 * necessary. Maybe integrate FakeMenu into it and use a DEBUG constant
 	 */
 	private void loadMensa(final int mensaID, final boolean forceRefetch) {
-		final boolean showProgressDialog = (!MensaFactory.isUpToDate(this,
-				mensaID) || forceRefetch);
+		final boolean showProgressDialog = (!MensaFactory.isUpToDate(mensaID) || forceRefetch);
 		final ProgressDialog progressDialog;
 
 		if (showProgressDialog) {
@@ -318,8 +327,7 @@ public class YeOldeMensa extends Activity {
 			@Override
 			public void run() {
 				try {
-					mensa = MensaFactory.getMensa(mensaID, YeOldeMensa.this,
-							forceRefetch);
+					mensa = MensaFactory.getMensa(mensaID, forceRefetch);
 					handler.sendEmptyMessage(0);
 				} catch (SocketTimeoutException e) {
 					displayException(e,
