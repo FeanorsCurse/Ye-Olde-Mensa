@@ -31,9 +31,12 @@ import org.json.JSONException;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -298,46 +301,77 @@ public class YeOldeMensa extends Activity {
 	 * messages. TODO: Include in refreshView()? Otherwise always both calls
 	 * necessary. Maybe integrate FakeMenu into it and use a DEBUG constant
 	 */
-	private void loadMensa(int mensaID, boolean forceRefetch) {
-		try {
-			this.mensa = MensaFactory.getMensa(mensaID, this, forceRefetch);
+	private void loadMensa(final int mensaID, final boolean forceRefetch) {
+		final boolean showProgressDialog = (!MensaFactory.isUpToDate(this,
+				mensaID) || forceRefetch);
+		final ProgressDialog progressDialog;
 
-			// Display last actualisation date
-			String date = new SimpleDateFormat("dd.MM.yyyy HH:mm")
-					.format(new Date());
-			((TextView) findViewById(R.id.headerdate)).setText("Aktualisiert "
-					+ date);
-
-			// Display current Mensa name
-			if (mensa == null) {
-				((TextView) findViewById(R.id.headermensa))
-						.setText("Keine Mensa ausgew√§hlt...");
-			} else {
-				((TextView) findViewById(R.id.headermensa)).setText(this.mensa
-						.getName());
-			}
-
-			// refresh View
-			for (MenuDayView v : menuDayView) {
-				v.refreshView();
-			}
-		} catch (SocketTimeoutException e) {
-			displayException(e,
-					"Timeout-Fehler: Die Webseite ist offline (oder lädt langsamer als in "
-							+ MensaFactory.TIMEOUT + "s)!");
-		} catch (UnknownHostException e) {
-			displayException(e,
-					"Fehler beim Auflösen des Hostnamens, keine Internetverbindung vorhanden?");
-			return;
-		} catch (SocketException e) {
-			displayException(e,
-					"Fehler beim Auflösen des Hostnamens, keine Internetverbindung vorhanden?");
-			return;
-		} catch (Exception e) {
-			displayException(
-					e,
-					"Fehler beim Auslesen der Mensadaten von www.yeoldemensa.de! Wir arbeiten wahrscheinlich schon dran... Falls es bis morgen nicht wieder läuft, schicke bitte eine Email an info@yeoldemensa.de!");
+		if (showProgressDialog) {
+			progressDialog = ProgressDialog.show(this, "",
+					"Hole Mensadaten, bitte warten...", true);
+		} else {
+			progressDialog = null;
 		}
+
+		new Thread() {
+
+			@Override
+			public void run() {
+				try {
+					mensa = MensaFactory.getMensa(mensaID, YeOldeMensa.this,
+							forceRefetch);
+					handler.sendEmptyMessage(0);
+				} catch (SocketTimeoutException e) {
+					displayException(e,
+							"Timeout-Fehler: Die Webseite ist offline (oder lädt langsamer als in "
+									+ MensaFactory.TIMEOUT + "s)!");
+				} catch (UnknownHostException e) {
+					displayException(e,
+							"Fehler beim Auflösen des Hostnamens, keine Internetverbindung vorhanden?");
+					return;
+				} catch (SocketException e) {
+					displayException(e,
+							"Fehler beim Auflösen des Hostnamens, keine Internetverbindung vorhanden?");
+					return;
+				} catch (Exception e) {
+					displayException(
+							e,
+							"Fehler beim Auslesen der Mensadaten von www.yeoldemensa.de! Wir arbeiten wahrscheinlich schon dran... Falls es bis morgen nicht wieder läuft, schicke bitte eine Email an info@yeoldemensa.de!");
+				}
+			}
+
+			private Handler handler = new Handler() {
+
+				@Override
+				public void handleMessage(Message msg) {
+
+					// Display last actualisation date
+					String date = new SimpleDateFormat("dd.MM.yyyy HH:mm")
+							.format(new Date());
+					((TextView) findViewById(R.id.headerdate))
+							.setText("Aktualisiert " + date);
+
+					// Display current Mensa name
+					if (mensa == null) {
+						((TextView) findViewById(R.id.headermensa))
+								.setText("Keine Mensa ausgew√§hlt...");
+					} else {
+						((TextView) findViewById(R.id.headermensa))
+								.setText(mensa.getName());
+					}
+
+					// refresh View
+					for (MenuDayView v : menuDayView) {
+						v.refreshView();
+					}
+
+					if (showProgressDialog) {
+						progressDialog.dismiss();
+					}
+				}
+			};
+
+		}.start();
 	}
 
 	/**

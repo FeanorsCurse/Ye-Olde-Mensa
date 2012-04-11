@@ -75,6 +75,14 @@ public class MensaFactory {
 		// Singleton pattern
 	}
 
+	public static boolean isUpToDate(Context context, int mensaID) {
+		return instance._isUpToDate(context, mensaID);
+	}
+
+	private boolean _isUpToDate(Context context, int mensaID) {
+		return new MensaSQLiteHelper(context).isMensaUpToDate(mensaID);
+	}
+
 	/**
 	 * Returns Mensa for the given ID. Will be fetched from internal sqlite db
 	 * if still up-to-date, otherwise will be retrieved from central server.
