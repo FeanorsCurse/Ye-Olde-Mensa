@@ -22,7 +22,6 @@ package de.feanor.yeoldemensa.data;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,9 +45,7 @@ public final class Mensa {
 	// types and menu items
 	private Map<Day, Map<String, List<String>>> menu = new LinkedHashMap<Day, Map<String, List<String>>>();
 
-	// TODO: Seems strange setting validTo like this
-	private Date validTo = new GregorianCalendar(1970, 1, 1).getTime();
-
+	private Date validTo;
 	private Date lastActualised;
 	private String name;
 	private double longitude, latitude;

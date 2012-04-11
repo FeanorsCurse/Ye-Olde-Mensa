@@ -25,7 +25,7 @@ class MensaSQLiteHelper extends SQLiteOpenHelper {
 	 * Used in Android. If higher than stored version, onUpgrade will be called
 	 * by android
 	 */
-	private static final int DATABASE_VERSION = 13;
+	private static final int DATABASE_VERSION = 20;
 
 	private static final String DATABASE_NAME = "yeoldemensa";
 
@@ -180,7 +180,16 @@ class MensaSQLiteHelper extends SQLiteOpenHelper {
 		boolean upToDate = false;
 
 		if (cursor.moveToFirst()) {
-			upToDate = new Date(cursor.getLong(2)).after(new Date());
+			Long validTo = cursor.getLong(2);
+			Log.d("yom", "validTo: " + cursor.isNull(2));
+
+			if (validTo != null) {
+				Log.d("yom",
+						"validTo: "
+								+ new Date(cursor.getLong(2)).toLocaleString());
+				// ValidTo after current date
+				upToDate = new Date(cursor.getLong(2)).after(new Date());
+			}
 		}
 		cursor.close();
 		db.close();
@@ -224,9 +233,11 @@ class MensaSQLiteHelper extends SQLiteOpenHelper {
 		for (Mensa mensa : mensas) {
 			Long lastActualised = mensa.getLastActualised() != null ? mensa
 					.getLastActualised().getTime() : null;
+			Long validTo = mensa.getValidTo() != null ? mensa.getValidTo()
+					.getTime() : null;
 			db.execSQL("INSERT INTO mensen VALUES (" + mensa.getID() + ", \""
-					+ mensa.getName() + "\"," + mensa.getValidTo().getTime()
-					+ "," + lastActualised + ")");
+					+ mensa.getName() + "\"," + validTo + "," + lastActualised
+					+ ")");
 		}
 		db.setTransactionSuccessful();
 		db.endTransaction();

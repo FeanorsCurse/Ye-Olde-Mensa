@@ -43,8 +43,8 @@ import org.json.JSONObject;
 
 import android.content.Context;
 import android.util.Log;
-import de.feanor.yeoldemensa.data.Mensa.Day;
 import de.feanor.yeoldemensa.YeOldeMensa;
+import de.feanor.yeoldemensa.data.Mensa.Day;
 
 /**
  * Factory Class for single access to Mensas (and their data). Provides a
@@ -120,7 +120,7 @@ public class MensaFactory {
 		// If we are up to date and don't need to fetch per user request, just
 		// load from db and be done
 		if (sqlHelper.isMensaUpToDate(id) && !forceRefetch) {
-			Log.d("yom", "Using internal database for mensa data");
+			Log.d("yom", "Using internal database for mensa with id " + id);
 			Mensa mensa = sqlHelper.loadMensa(id);
 			Log.d("yom", "Fetching the mensa took "
 					+ (new Date().getTime() - date.getTime()) + "ms.");
@@ -128,8 +128,8 @@ public class MensaFactory {
 		}
 
 		// Otherwise fetch from the server
-		Log.i("yom", "Fetching mensa data from server (forceRefetch="
-				+ forceRefetch + ")");
+		Log.i("yom", "Fetching mensa with id = " + id
+				+ " from server (forceRefetch=" + forceRefetch + ")");
 
 		Mensa mensa = new Mensa(id);
 
@@ -254,11 +254,13 @@ public class MensaFactory {
 					"mensa");
 			Mensa mensa = new Mensa(mensaJSON.getInt("id"));
 			mensa.setName(mensaJSON.getString("name"));
-			mensa.setValidTo(new SimpleDateFormat("yyyy-MM-dd").parse(mensaJSON
-					.getString("validTo").substring(0, 10)));
 
 			// If the mensa's content is up to date, set the last actualized
 			// date so not to refetch it's data
+			if (sqlHelper.loadMensa(mensa.getID()) != null) {
+				mensa.setValidTo(sqlHelper.loadMensa(mensa.getID())
+						.getValidTo());
+			}
 			if (sqlHelper.isMensaUpToDate(mensa.getID())) {
 				mensa.setLastActualised(sqlHelper.loadMensa(mensa.getID())
 						.getLastActualised());

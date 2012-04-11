@@ -48,8 +48,8 @@ import android.widget.TabHost.TabSpec;
 import android.widget.TextView;
 import android.widget.Toast;
 import de.feanor.yeoldemensa.data.Mensa;
-import de.feanor.yeoldemensa.data.MensaFactory;
 import de.feanor.yeoldemensa.data.Mensa.Day;
+import de.feanor.yeoldemensa.data.MensaFactory;
 
 /**
  * Main class of the application.
@@ -86,6 +86,9 @@ public class YeOldeMensa extends Activity {
 	// One for each day of the week
 	private MenuDayView[] menuDayView = new MenuDayView[5];
 
+	/**
+	 * @see android.app.Activity#onCreate(android.os.Bundle)
+	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -171,6 +174,9 @@ public class YeOldeMensa extends Activity {
 		return mensa;
 	}
 
+	/**
+	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
+	 */
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
@@ -178,6 +184,9 @@ public class YeOldeMensa extends Activity {
 		return true;
 	}
 
+	/**
+	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
+	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
@@ -185,7 +194,7 @@ public class YeOldeMensa extends Activity {
 			if (mensa == null) {
 				Toast.makeText(
 						YeOldeMensa.this,
-						"Keine Mensa ausgew√§hlt. Bitte erst eine Mensa in den Einstellungen ausw√§hlen!",
+						"Keine Mensa ausgewählt. Bitte erst eine Mensa in den Einstellungen auswählen!",
 						Toast.LENGTH_LONG).show();
 			} else {
 				loadMensa(mensa.getID(), true);
@@ -222,7 +231,7 @@ public class YeOldeMensa extends Activity {
 		} catch (JSONException e) {
 			displayException(
 					e,
-					"Fehler im Datenformat auf yeoldemensa.de. Das sollte nicht passieren! Wir arbeiten wahrscheinlich schon dran... Falls es bis morgen nicht wieder l√§uft, schicke bitte eine Email an info@yeoldemensa.de!");
+					"Fehler im Datenformat auf yeoldemensa.de. Das sollte nicht passieren! Wir arbeiten wahrscheinlich schon dran... Falls es bis morgen nicht wieder läuft, schicke bitte eine Email an info@yeoldemensa.de!");
 			return;
 		} catch (UnknownHostException e) {
 			displayException(e,
@@ -235,7 +244,7 @@ public class YeOldeMensa extends Activity {
 		} catch (Exception e) {
 			displayException(
 					e,
-					"Fehler beim Auslesen der Mensadaten von www.yeoldemensa.de! Wir arbeiten wahrscheinlich schon dran... Falls es bis morgen nicht wieder l√§uft, schicke bitte eine Email an info@yeoldemensa.de!");
+					"Fehler beim Auslesen der Mensadaten von www.yeoldemensa.de! Wir arbeiten wahrscheinlich schon dran... Falls es bis morgen nicht wieder läuft, schicke bitte eine Email an info@yeoldemensa.de!");
 			return;
 		}
 
@@ -243,31 +252,36 @@ public class YeOldeMensa extends Activity {
 		builder.setSingleChoiceItems(mensaNames, -1,
 				new DialogInterface.OnClickListener() {
 					@Override
-					public void onClick(DialogInterface dialog,
-							int selectedMensaID) {
-						// TODO: Don't depend on order (+1)
-						selectedMensaID++;
+					public void onClick(final DialogInterface dialog,
+							final int selectedMensaID) {
+						Handler handler = new Handler() {
 
-						loadMensa(selectedMensaID, false);
+							@Override
+							public void handleMessage(Message msg) {
+								// Store selected mensa
+								SharedPreferences settings = getSharedPreferences(
+										"yom_prefs", 0);
+								SharedPreferences.Editor editor = settings
+										.edit();
+								editor.putInt("selected mensa",
+										selectedMensaID + 1);
+								editor.commit();
+								dialog.dismiss();
 
-						// Store selected mensa
-						SharedPreferences settings = getSharedPreferences(
-								"yom_prefs", 0);
-						SharedPreferences.Editor editor = settings.edit();
-						editor.putInt("selected mensa", selectedMensaID);
-						editor.commit();
-						dialog.dismiss();
+								// Todo: Mgdb
+								String name = mensa.getName();
+								if (name.startsWith("Magdeburg")
+										|| name.startsWith("Werningerode")
+										|| name.startsWith("Stendal")) {
+									Toast.makeText(
+											YeOldeMensa.this,
+											"Diese Mensa unterstützt bislang leider noch keine Wochenpläne und benötigt manuelles \"aktualisieren\" im Menü.\n\nWir arbeiten dran!",
+											Toast.LENGTH_LONG).show();
+								}
+							}
+						};
 
-						// Todo: Mgdb
-						String name = mensa.getName();
-						if (name.startsWith("Magdeburg")
-								|| name.startsWith("Werningerode")
-								|| name.startsWith("Stendal")) {
-							Toast.makeText(
-									YeOldeMensa.this,
-									"Diese Mensa unterstützt bislang leider noch keine Wochenpläne und benötigt manuelles \"aktualisieren\" im Menü.\n\nWir arbeiten dran!",
-									Toast.LENGTH_LONG).show();
-						}
+						loadMensa(selectedMensaID + 1, false, handler);
 					}
 				});
 		builder.setCancelable(true);
@@ -293,7 +307,7 @@ public class YeOldeMensa extends Activity {
 						+ VERSION_PUBLIC
 						+ "\n\nCopyright 2010/2011\nby Daniel Süpke\nContributions by Frederik Kramer und Markus Schneider\n\nDeine Mensa fehlt oder du hast einen Bug gefunden? Maile an info@yeoldemensa.de\n\nFolge uns auf Twitter:\nhttp://twitter.com/yeoldemensa\n\nHomepage und FAQ:\nhttp://www.yeoldemensa.de/ ")
 				// +
-				// "\n Die Entfernung\n zur ausgew√§hlten Mensa\n betr√§gt zur Zeit: "
+				// "\n Die Entfernung\n zur ausgewählten Mensa\n beträgt zur Zeit: "
 				// + distance + "km")
 				.setCancelable(false)
 				.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
@@ -311,7 +325,8 @@ public class YeOldeMensa extends Activity {
 	 * messages. TODO: Include in refreshView()? Otherwise always both calls
 	 * necessary. Maybe integrate FakeMenu into it and use a DEBUG constant
 	 */
-	private void loadMensa(final int mensaID, final boolean forceRefetch) {
+	private void loadMensa(final int mensaID, final boolean forceRefetch,
+			final Handler... handlers) {
 		final boolean showProgressDialog = (!MensaFactory.isUpToDate(mensaID) || forceRefetch);
 		final ProgressDialog progressDialog;
 
@@ -328,49 +343,36 @@ public class YeOldeMensa extends Activity {
 			public void run() {
 				try {
 					mensa = MensaFactory.getMensa(mensaID, forceRefetch);
+					for (Handler nextHandler : handlers) {
+						nextHandler.sendEmptyMessage(0);
+					}
 					handler.sendEmptyMessage(0);
-				} catch (SocketTimeoutException e) {
-					displayException(e,
-							"Timeout-Fehler: Die Webseite ist offline (oder lädt langsamer als in "
-									+ MensaFactory.TIMEOUT + "s)!");
-				} catch (UnknownHostException e) {
-					displayException(e,
-							"Fehler beim Auflösen des Hostnamens, keine Internetverbindung vorhanden?");
-					return;
-				} catch (SocketException e) {
-					displayException(e,
-							"Fehler beim Auflösen des Hostnamens, keine Internetverbindung vorhanden?");
-					return;
 				} catch (Exception e) {
-					displayException(
-							e,
-							"Fehler beim Auslesen der Mensadaten von www.yeoldemensa.de! Wir arbeiten wahrscheinlich schon dran... Falls es bis morgen nicht wieder läuft, schicke bitte eine Email an info@yeoldemensa.de!");
+					Message exceptionMessage = Message.obtain();
+					exceptionMessage.obj = e;
+					exceptionHandler.sendMessage(exceptionMessage);
 				}
 			}
 
-			private Handler handler = new Handler() {
-
+			private Handler exceptionHandler = new Handler() {
 				@Override
 				public void handleMessage(Message msg) {
+					Exception e = (Exception) msg.obj;
 
-					// Display last actualisation date
-					String date = new SimpleDateFormat("dd.MM.yyyy HH:mm")
-							.format(new Date());
-					((TextView) findViewById(R.id.headerdate))
-							.setText("Aktualisiert " + date);
-
-					// Display current Mensa name
-					if (mensa == null) {
-						((TextView) findViewById(R.id.headermensa))
-								.setText("Keine Mensa ausgew√§hlt...");
+					if (e instanceof SocketTimeoutException) {
+						displayException(e,
+								"Timeout-Fehler: Die Webseite ist offline (oder lädt langsamer als in "
+										+ MensaFactory.TIMEOUT + "s)!");
+					} else if (e instanceof UnknownHostException) {
+						displayException(e,
+								"Fehler beim Auflösen des Hostnamens, keine Internetverbindung vorhanden?");
+					} else if (e instanceof SocketException) {
+						displayException(e,
+								"Fehler beim Auflösen des Hostnamens, keine Internetverbindung vorhanden?");
 					} else {
-						((TextView) findViewById(R.id.headermensa))
-								.setText(mensa.getName());
-					}
-
-					// refresh View
-					for (MenuDayView v : menuDayView) {
-						v.refreshView();
+						displayException(
+								e,
+								"Fehler beim Auslesen der Mensadaten von www.yeoldemensa.de! Wir arbeiten wahrscheinlich schon dran... Falls es bis morgen nicht wieder läuft, schicke bitte eine Email an info@yeoldemensa.de!");
 					}
 
 					if (showProgressDialog) {
@@ -379,7 +381,44 @@ public class YeOldeMensa extends Activity {
 				}
 			};
 
+			private Handler handler = new Handler() {
+
+				@Override
+				public void handleMessage(Message msg) {
+					updateMensaView();
+
+					if (showProgressDialog) {
+						progressDialog.dismiss();
+					}
+				}
+			};
+
 		}.start();
+	}
+
+	private void updateMensaView() {
+		// Display last actualisation date
+		String date = new SimpleDateFormat("dd.MM.yyyy HH:mm")
+				.format(new Date());
+		((TextView) findViewById(R.id.headerdate)).setText("Aktualisiert "
+				+ date);
+
+		// Display current Mensa name
+		if (mensa == null) {
+			Log.d("yom", "Updating screen for mensa null!");
+			((TextView) findViewById(R.id.headermensa))
+					.setText("Keine Mensa ausgewählt...");
+		} else {
+			Log.d("yom", "Updating screen for mensa " + mensa.getName()
+					+ " (id: " + mensa.getID() + ")");
+			((TextView) findViewById(R.id.headermensa))
+					.setText(mensa.getName());
+		}
+
+		// refresh View
+		for (MenuDayView v : menuDayView) {
+			v.refreshView();
+		}
 	}
 
 	/**
