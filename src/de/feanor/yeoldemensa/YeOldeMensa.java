@@ -267,17 +267,6 @@ public class YeOldeMensa extends Activity {
 										selectedMensaID + 1);
 								editor.commit();
 								dialog.dismiss();
-
-								// Todo: Mgdb
-								String name = mensa.getName();
-								if (name.startsWith("Magdeburg")
-										|| name.startsWith("Werningerode")
-										|| name.startsWith("Stendal")) {
-									Toast.makeText(
-											YeOldeMensa.this,
-											"Diese Mensa unterstützt bislang leider noch keine Wochenpläne und benötigt manuelles \"aktualisieren\" im Menü.\n\nWir arbeiten dran!",
-											Toast.LENGTH_LONG).show();
-								}
 							}
 						};
 
