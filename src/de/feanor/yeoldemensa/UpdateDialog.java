@@ -2,7 +2,7 @@
  *   Ye Olde Mensa is an android application for displaying the current
  *   mensa plans of University Oldenburg on an android mobile phone.
  *   
- *   Copyright (C) 2009/2010 Daniel Süpke
+ *   Copyright (C) 2009-2013 Daniel Süpke
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -19,19 +19,17 @@
  */
 package de.feanor.yeoldemensa;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.util.SparseArray;
 
 /**
  * @author Daniel Süpke
  */
 public class UpdateDialog {
 
-	private static Map<Integer, String> updates = new HashMap<Integer, String>();
+	private static SparseArray<String> updates = new SparseArray<String>();
 
 	/**
 	 * Private Singleton constructor
@@ -40,7 +38,7 @@ public class UpdateDialog {
 		// Singleton pattern
 	}
 
-	// TODO: Display all udpate infos since last updated version
+	// TODO: Display all update infos since last updated version
 	/**
 	 * Displays the latest update description.
 	 * 
@@ -65,6 +63,8 @@ public class UpdateDialog {
 	}
 
 	private static void setupVersions() {
+		updates.put(10, "Updates in Version 1.5:\n\n"
+				+ "- Kontaktdaten aktualisiert");
 		updates.put(
 				10,
 				"Nachdem ich meine Doktorarbeit erfolgreich verteidigt habe, finde ich jetzt hoffentlich wieder mehr Zeit für die App :)\n"

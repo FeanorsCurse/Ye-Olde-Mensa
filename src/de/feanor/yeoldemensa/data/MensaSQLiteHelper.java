@@ -184,7 +184,7 @@ class MensaSQLiteHelper extends SQLiteOpenHelper {
 			Log.d("yom", "validTo: " + cursor.isNull(2));
 
 			if (validTo != null) {
-				Log.d("yom",
+				Log.v("yom",
 						"validTo: "
 								+ new Date(cursor.getLong(2)).toLocaleString());
 				// ValidTo after current date

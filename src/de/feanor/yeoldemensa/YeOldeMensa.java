@@ -2,7 +2,7 @@
  *   Ye Olde Mensa is an android application for displaying the current
  *   mensa plans of University Oldenburg on an android mobile phone.
  *   
- *   Copyright (C) 2009/2010 Daniel Süpke
+ *   Copyright (C) 2009-2013 Daniel Süpke
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -20,14 +20,9 @@
 
 package de.feanor.yeoldemensa;
 
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-
-import org.json.JSONException;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -62,14 +57,19 @@ public class YeOldeMensa extends Activity {
 	 * Version string is automatically displayed throughout the application.
 	 * Always keep same with market version number!
 	 */
-	public static final String VERSION_PUBLIC = "1.4";
+	public static final String VERSION_PUBLIC = "1.5";
 
 	/**
 	 * Should be exactly the version as defined in the Manifest. Currently
 	 * needed for update-dialog. TODO: Can the manifest version be accessed
 	 * directly instead?
 	 */
-	public static final int VERSION_INTERNAL = 10;
+	public static final int VERSION_INTERNAL = 11;
+
+	public static final String CONTACT_EMAIL = "dsuepke@gmail.com";
+
+	/** The host to connect to for data, also the project's web page. */
+	public static final String HOST = "yeoldemensa.de";
 
 	/**
 	 * The application context, required e.g. in the MensaSQLiteHelper. Can be
@@ -228,24 +228,8 @@ public class YeOldeMensa extends Activity {
 			// TODO: Don't depend on order
 			mensaNames = MensaFactory.getMensaList().values()
 					.toArray(new String[0]);
-		} catch (JSONException e) {
-			displayException(
-					e,
-					"Fehler im Datenformat auf yeoldemensa.de. Das sollte nicht passieren! Wir arbeiten wahrscheinlich schon dran... Falls es bis morgen nicht wieder lüuft, schicke bitte eine Email an info@yeoldemensa.de!");
-			return;
-		} catch (UnknownHostException e) {
-			displayException(e,
-					"Fehler beim Auflüsen des Hostnamens, keine Internetverbindung vorhanden?");
-			return;
-		} catch (SocketException e) {
-			displayException(e,
-					"Fehler beim Auflüsen des Hostnamens, keine Internetverbindung vorhanden?");
-			return;
 		} catch (Exception e) {
-			displayException(
-					e,
-					"Fehler beim Auslesen der Mensadaten von www.yeoldemensa.de! Wir arbeiten wahrscheinlich schon dran... Falls es bis morgen nicht wieder lüuft, schicke bitte eine Email an info@yeoldemensa.de!");
-			return;
+			ExceptionHandler.handleException(e);
 		}
 
 		builder.setTitle("Einstellungen");
@@ -294,7 +278,11 @@ public class YeOldeMensa extends Activity {
 		builder.setMessage(
 				"Ye Olde Mensa v"
 						+ VERSION_PUBLIC
-						+ "\n\nCopyright 2010/2011\nby Daniel Süpke\nContributions by Frederik Kramer und Markus Schneider\n\nDeine Mensa fehlt oder du hast einen Bug gefunden? Maile an info@yeoldemensa.de\n\nFolge uns auf Twitter:\nhttp://twitter.com/yeoldemensa\n\nHomepage und FAQ:\nhttp://www.yeoldemensa.de/ ")
+						+ "\n\nCopyright 2010/2011\nby Daniel Süpke\nContributions by Frederik Kramer und Markus Schneider\n\n"
+						+ "Deine Mensa fehlt oder du hast einen Bug gefunden? Maile an "
+						+ CONTACT_EMAIL
+						+ "\n\nFolge uns auf Twitter:\nhttp://twitter.com/yeoldemensa\n\n"
+						+ "Homepage und FAQ:\nhttp://www." + HOST)
 				// +
 				// "\n Die Entfernung\n zur ausgewühlten Mensa\n betrügt zur Zeit: "
 				// + distance + "km")
@@ -339,36 +327,21 @@ public class YeOldeMensa extends Activity {
 				} catch (Exception e) {
 					Message exceptionMessage = Message.obtain();
 					exceptionMessage.obj = e;
-					exceptionHandler.sendMessage(exceptionMessage);
+
+					new Handler() {
+						@Override
+						public void handleMessage(Message msg) {
+							Exception e = (Exception) msg.obj;
+
+							ExceptionHandler.handleException(e);
+
+							if (showProgressDialog) {
+								progressDialog.dismiss();
+							}
+						}
+					}.sendMessage(exceptionMessage);
 				}
 			}
-
-			private Handler exceptionHandler = new Handler() {
-				@Override
-				public void handleMessage(Message msg) {
-					Exception e = (Exception) msg.obj;
-
-					if (e instanceof SocketTimeoutException) {
-						displayException(e,
-								"Timeout-Fehler: Die Webseite ist offline (oder lüdt langsamer als in "
-										+ MensaFactory.TIMEOUT + "s)!");
-					} else if (e instanceof UnknownHostException) {
-						displayException(e,
-								"Fehler beim Auflüsen des Hostnamens, keine Internetverbindung vorhanden?");
-					} else if (e instanceof SocketException) {
-						displayException(e,
-								"Fehler beim Auflüsen des Hostnamens, keine Internetverbindung vorhanden?");
-					} else {
-						displayException(
-								e,
-								"Fehler beim Auslesen der Mensadaten von www.yeoldemensa.de! Wir arbeiten wahrscheinlich schon dran... Falls es bis morgen nicht wieder lüuft, schicke bitte eine Email an info@yeoldemensa.de!");
-					}
-
-					if (showProgressDialog) {
-						progressDialog.dismiss();
-					}
-				}
-			};
 
 			private Handler handler = new Handler() {
 
@@ -396,7 +369,7 @@ public class YeOldeMensa extends Activity {
 		if (mensa == null) {
 			Log.d("yom", "Updating screen for mensa null!");
 			((TextView) findViewById(R.id.headermensa))
-					.setText("Keine Mensa ausgewühlt...");
+					.setText("Keine Mensa ausgewählt...");
 		} else {
 			Log.d("yom", "Updating screen for mensa " + mensa.getName()
 					+ " (id: " + mensa.getID() + ")");
@@ -410,31 +383,4 @@ public class YeOldeMensa extends Activity {
 		}
 	}
 
-	/**
-	 * Displays an exception text to the user, along with explanatory error
-	 * message. This error message should be understandable even to
-	 * non-programmers and maybe help us when they give feedback.
-	 * 
-	 * Where Exceptions might occur, always use this method! App should never
-	 * crash without an info to the user.
-	 * 
-	 * @param e
-	 *            Exception to display
-	 * @param errorMessage
-	 *            (Commonly understandable) error message to display.
-	 */
-	private void displayException(Exception e, String errorMessage) {
-		Log.e("yom", errorMessage + ": " + e.getMessage(), e);
-
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setMessage(errorMessage + "\n\nDetail: " + e)
-				.setCancelable(false)
-				.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int id) {
-						dialog.dismiss();
-					}
-				});
-		builder.create().show();
-	}
 }

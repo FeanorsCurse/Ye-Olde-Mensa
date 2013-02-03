@@ -2,7 +2,7 @@
  *   Ye Olde Mensa is an android application for displaying the current
  *   mensa plans of University Oldenburg on an android mobile phone.
  *   
- *   Copyright (C) 2009/2010 Daniel Süpke
+ *   Copyright (C) 2009-2013 Daniel Süpke
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
