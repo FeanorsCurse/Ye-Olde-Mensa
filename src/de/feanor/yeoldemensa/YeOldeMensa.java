@@ -54,7 +54,7 @@ import de.feanor.yeoldemensa.data.MensaFactory;
 /**
  * Main class of the application.
  * 
- * @author Daniel S웤ke
+ * @author Daniel S체pke
  */
 public class YeOldeMensa extends Activity {
 
@@ -194,7 +194,7 @@ public class YeOldeMensa extends Activity {
 			if (mensa == null) {
 				Toast.makeText(
 						YeOldeMensa.this,
-						"Keine Mensa ausgew둯lt. Bitte erst eine Mensa in den Einstellungen ausw둯len!",
+						"Keine Mensa ausgew체hlt. Bitte erst eine Mensa in den Einstellungen ausw체hlen!",
 						Toast.LENGTH_LONG).show();
 			} else {
 				loadMensa(mensa.getID(), true);
@@ -231,20 +231,20 @@ public class YeOldeMensa extends Activity {
 		} catch (JSONException e) {
 			displayException(
 					e,
-					"Fehler im Datenformat auf yeoldemensa.de. Das sollte nicht passieren! Wir arbeiten wahrscheinlich schon dran... Falls es bis morgen nicht wieder l둼ft, schicke bitte eine Email an info@yeoldemensa.de!");
+					"Fehler im Datenformat auf yeoldemensa.de. Das sollte nicht passieren! Wir arbeiten wahrscheinlich schon dran... Falls es bis morgen nicht wieder l체uft, schicke bitte eine Email an info@yeoldemensa.de!");
 			return;
 		} catch (UnknownHostException e) {
 			displayException(e,
-					"Fehler beim Aufl쉝en des Hostnamens, keine Internetverbindung vorhanden?");
+					"Fehler beim Aufl체sen des Hostnamens, keine Internetverbindung vorhanden?");
 			return;
 		} catch (SocketException e) {
 			displayException(e,
-					"Fehler beim Aufl쉝en des Hostnamens, keine Internetverbindung vorhanden?");
+					"Fehler beim Aufl체sen des Hostnamens, keine Internetverbindung vorhanden?");
 			return;
 		} catch (Exception e) {
 			displayException(
 					e,
-					"Fehler beim Auslesen der Mensadaten von www.yeoldemensa.de! Wir arbeiten wahrscheinlich schon dran... Falls es bis morgen nicht wieder l둼ft, schicke bitte eine Email an info@yeoldemensa.de!");
+					"Fehler beim Auslesen der Mensadaten von www.yeoldemensa.de! Wir arbeiten wahrscheinlich schon dran... Falls es bis morgen nicht wieder l체uft, schicke bitte eine Email an info@yeoldemensa.de!");
 			return;
 		}
 
@@ -294,9 +294,9 @@ public class YeOldeMensa extends Activity {
 		builder.setMessage(
 				"Ye Olde Mensa v"
 						+ VERSION_PUBLIC
-						+ "\n\nCopyright 2010/2011\nby Daniel S웤ke\nContributions by Frederik Kramer und Markus Schneider\n\nDeine Mensa fehlt oder du hast einen Bug gefunden? Maile an info@yeoldemensa.de\n\nFolge uns auf Twitter:\nhttp://twitter.com/yeoldemensa\n\nHomepage und FAQ:\nhttp://www.yeoldemensa.de/ ")
+						+ "\n\nCopyright 2010/2011\nby Daniel S체pke\nContributions by Frederik Kramer und Markus Schneider\n\nDeine Mensa fehlt oder du hast einen Bug gefunden? Maile an info@yeoldemensa.de\n\nFolge uns auf Twitter:\nhttp://twitter.com/yeoldemensa\n\nHomepage und FAQ:\nhttp://www.yeoldemensa.de/ ")
 				// +
-				// "\n Die Entfernung\n zur ausgew둯lten Mensa\n betr둮t zur Zeit: "
+				// "\n Die Entfernung\n zur ausgew체hlten Mensa\n betr체gt zur Zeit: "
 				// + distance + "km")
 				.setCancelable(false)
 				.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
@@ -350,18 +350,18 @@ public class YeOldeMensa extends Activity {
 
 					if (e instanceof SocketTimeoutException) {
 						displayException(e,
-								"Timeout-Fehler: Die Webseite ist offline (oder l둪t langsamer als in "
+								"Timeout-Fehler: Die Webseite ist offline (oder l체dt langsamer als in "
 										+ MensaFactory.TIMEOUT + "s)!");
 					} else if (e instanceof UnknownHostException) {
 						displayException(e,
-								"Fehler beim Aufl쉝en des Hostnamens, keine Internetverbindung vorhanden?");
+								"Fehler beim Aufl체sen des Hostnamens, keine Internetverbindung vorhanden?");
 					} else if (e instanceof SocketException) {
 						displayException(e,
-								"Fehler beim Aufl쉝en des Hostnamens, keine Internetverbindung vorhanden?");
+								"Fehler beim Aufl체sen des Hostnamens, keine Internetverbindung vorhanden?");
 					} else {
 						displayException(
 								e,
-								"Fehler beim Auslesen der Mensadaten von www.yeoldemensa.de! Wir arbeiten wahrscheinlich schon dran... Falls es bis morgen nicht wieder l둼ft, schicke bitte eine Email an info@yeoldemensa.de!");
+								"Fehler beim Auslesen der Mensadaten von www.yeoldemensa.de! Wir arbeiten wahrscheinlich schon dran... Falls es bis morgen nicht wieder l체uft, schicke bitte eine Email an info@yeoldemensa.de!");
 					}
 
 					if (showProgressDialog) {
@@ -396,7 +396,7 @@ public class YeOldeMensa extends Activity {
 		if (mensa == null) {
 			Log.d("yom", "Updating screen for mensa null!");
 			((TextView) findViewById(R.id.headermensa))
-					.setText("Keine Mensa ausgew둯lt...");
+					.setText("Keine Mensa ausgew체hlt...");
 		} else {
 			Log.d("yom", "Updating screen for mensa " + mensa.getName()
 					+ " (id: " + mensa.getID() + ")");

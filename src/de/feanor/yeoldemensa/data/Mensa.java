@@ -32,7 +32,7 @@ import android.util.Log;
  * Data class for storing Mensa data (the Mensa itselfs and menu items for the
  * week)
  * 
- * @author Daniel SŸpke
+ * @author Daniel SÃ¼pke
  */
 public final class Mensa {
 

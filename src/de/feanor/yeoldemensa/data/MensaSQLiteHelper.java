@@ -16,7 +16,7 @@ import de.feanor.yeoldemensa.data.Mensa.Day;
  * Helper for the internal sqlite db of the app. Provides fast access for
  * storing and retrieving Mensas.
  * 
- * @author Daniel SŸpke
+ * @author Daniel SÃ¼pke
  */
 class MensaSQLiteHelper extends SQLiteOpenHelper {
 	// TODO: db.close() necessary? Look up!

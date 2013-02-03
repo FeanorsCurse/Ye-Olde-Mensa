@@ -2,7 +2,7 @@
  *   Ye Olde Mensa is an android application for displaying the current
  *   mensa plans of University Oldenburg on an android mobile phone.
  *   
- *   Copyright (C) 2009/2010 Daniel S웤ke
+ *   Copyright (C) 2009/2010 Daniel S체pke
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 
 /**
- * @author Daniel S웤ke
+ * @author Daniel S체pke
  */
 public class UpdateDialog {
 
@@ -67,35 +67,35 @@ public class UpdateDialog {
 	private static void setupVersions() {
 		updates.put(
 				10,
-				"Nachdem ich meine Doktorarbeit erfolgreich verteidigt habe, finde ich jetzt hoffentlich wieder mehr Zeit f웦 die App :)\n"
+				"Nachdem ich meine Doktorarbeit erfolgreich verteidigt habe, finde ich jetzt hoffentlich wieder mehr Zeit f체r die App :)\n"
 						+ "Updates in Version 1.4:\n\n"
-						+ "- Datenbank endlich gefixt - Mensen sind nach Abruf auch ohne Internet verf웗bar\n"
+						+ "- Datenbank endlich gefixt - Mensen sind nach Abruf auch ohne Internet verf체gbar\n"
 						+ "- Ladebildschirm bei Aktualisierung vom Server");
 		updates.put(
 				9,
 				"Updates in Version 1.3:\n\n"
-						+ "- Unterst웪zung f웦 둳tere Android-Handys (bis v1.6)\n"
-						+ "- App2sd-Unterst웪zung\n"
+						+ "- Unterst체tzung f체r 체ltere Android-Handys (bis v1.6)\n"
+						+ "- App2sd-Unterst체tzung\n"
 						+ "- Speicherleck in der DB gefixt\n"
-						+ "Evtl. auftretende Probleme/W웢sche bitte wie 웑lich an info@yeoldemensa.de!");
+						+ "Evtl. auftretende Probleme/W체nsche bitte wie 체blich an info@yeoldemensa.de!");
 
 		updates.put(
 				8,
 				"Updates in Version 1.2:\n\n"
-						+ "- Wochenansicht jetzt auch f웦 Nicht-Oldenburger-Mensen (Frederik, Markus)\n"
-						+ "- Mensapl둵e werden jetzt direkt von yeoldemensa.de geholt, dadurch:\n"
+						+ "- Wochenansicht jetzt auch f체r Nicht-Oldenburger-Mensen (Frederik, Markus)\n"
+						+ "- Mensapl체ne werden jetzt direkt von yeoldemensa.de geholt, dadurch:\n"
 						+ "  * App kleiner und schneller\n"
-						+ "  * Mensa-Updates ohne App-Updates m쉍lich\n"
-						+ "  * keine Mensapl둵e, wenn der yeoldemensa-Server abschmiert ;)\n"
+						+ "  * Mensa-Updates ohne App-Updates m체glich\n"
+						+ "  * keine Mensapl체ne, wenn der yeoldemensa-Server abschmiert ;)\n"
 						+ "- Datenbank beschleunigt\n\n"
-						+ "Bitte bedenkt, dass wir die neue Funktionalit둻 noch testen. Wenn es Probleme geben sollte, schreibt bitte eine Mail an info@yeoldemensa.de!");
+						+ "Bitte bedenkt, dass wir die neue Funktionalit체t noch testen. Wenn es Probleme geben sollte, schreibt bitte eine Mail an info@yeoldemensa.de!");
 
 		updates.put(
 				7,
 				"Updates in Version 1.0:\n\n"
-						+ "- Wochenansicht f웦 Oldenburger Mensen (andere Mensen folgen in K웦ze!)\n"
-						+ "- Merkt sich die zuletzt gew둯lte Mensa\n"
-						+ "- Mensapl둵e werden zwischengespeichert, dadurch deutlich schneller sobald die Pl둵e einmal geladen wurden\n"
+						+ "- Wochenansicht f체r Oldenburger Mensen (andere Mensen folgen in K체rze!)\n"
+						+ "- Merkt sich die zuletzt gew체hlte Mensa\n"
+						+ "- Mensapl체ne werden zwischengespeichert, dadurch deutlich schneller sobald die Pl체ne einmal geladen wurden\n"
 						+ "- Diverse Bugfixes (bei weiteren Bugs bitte Mail an info@yeoldemensa.de!)\n"
 						+ "- Homepage und Twitter-Account:\nhttp://twitter.com/yeoldemensa\nhttp://www.yeoldemensa.de");
 

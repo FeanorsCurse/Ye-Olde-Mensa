@@ -33,7 +33,7 @@ import de.feanor.yeoldemensa.data.Mensa.Day;
 /**
  * Provides the view for a tab representing one day of a Mensa.
  * 
- * @author Daniel Süpke
+ * @author Daniel S√ºpke
  */
 public class MenuDayView extends ListView {
 
@@ -85,7 +85,7 @@ public class MenuDayView extends ListView {
 		// dummy adapter to avoid error
 		if (mensa.isEmpty(day)) {
 			List<String> list = new ArrayList<String>();
-			list.add("Kein Menü gefunden. Mensa geschlossen?");
+			list.add("Kein Men√º gefunden. Mensa geschlossen?");
 			a = new ArrayAdapter<String>(context, R.layout.list_header, list);
 			adapter.addAdapter(a);
 		}
